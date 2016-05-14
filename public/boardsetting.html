@@ -16,33 +16,22 @@
     h1 {
       text-align: center;
     }
+    h2 {
+      text-align: center;
+    }
   </style>
 </head>
 
 <body>
   <div class="row">
     <h1> Welcome to Battleship </h1>
+    <h2> Design your board here!</h2>
   </div>
-  <div class="col-md-5">
-      <!--<div class="row">-->
-      <div class="watermark">
-        <table class="table table-bordered">
-          <script>
-            for(var i = 0;i < 10;i++){
-              document.writeln('<tr>');
-              for(var j = 0;j < 10;j++){
-                document.writeln('<td><div class="content"></div></td>');
-              }
-              document.writeln('</tr>');
-            }
-          </script>
-        </table>
-      </div>
+  <div class="col-md-4">
   </div>
-  <div class="col-md-2">
-  </div>
-  <div class="col-md-5">
-    <div class="watermark2">
+  <div class="col-md-4">
+    <!--<div class="row">-->
+    <div class="watermark">
       <table class="table table-bordered">
         <script>
           for(var i = 0;i < 10;i++){
@@ -55,6 +44,11 @@
         </script>
       </table>
     </div>
+    <h1>
+      <a href="battleship.html" class="btn btn-default">Battle Now!</a>
+    </h1>
+  </div>
+  <div class="col-md-4">
   </div>
 </body>
 

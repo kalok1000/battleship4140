@@ -29,6 +29,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 //app.use('/', routes);
 app.use('/users', users);
 
+
+app.get('/',function(request,response){
+    response.sendFile(__dirname+'/views/index.html');
+})
+app.get('/login',function(request,response){
+    response.sendFile(__dirname+'/views/login.html');
+})
+app.get('/register',function(request,response){
+    response.sendFile(__dirname+'/views/register.html');
+})
+app.get('/lobby',function(request,response){
+    response.sendFile(__dirname+'/views/lobby.html');
+})
+app.get('/boardsetting',function(request,response){
+    response.sendFile(__dirname+'/views/boardsetting.html');
+})
+app.get('/battleship',function(request,response){
+    response.sendFile(__dirname+'/views/battleship.html');
+})
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

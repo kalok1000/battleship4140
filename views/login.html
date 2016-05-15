@@ -11,19 +11,21 @@
 
   <!-- Latest compiled JavaScript -->
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+  <style>
+    label {display: block; position: relative; margin: 10px 0px}
+    .text {position: absolute; width: 15em; left: 80px}
+  </style>
 </head>
 
 <body>
   <h1> Battleship </h1>
   <h2> Login </h2>
-  <form>
-    Username:<br>
-    <input type="text" name="username"><br>
-    Password:<br>
-    <input type="password" name="password">
+  <form name="loginform">
+      <label>Username: <input class="text" type="text" name="username"/></label>
+      <label>Password: <input class="text" type="password" name="password"/></label>
+      <input type="submit" value="Login"/>
   </form>
-  <br>
-  <a href="lobby" class="btn btn-default">Enter to login page</a>
 
 </body>
 

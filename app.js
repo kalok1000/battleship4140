@@ -44,6 +44,9 @@ app.get('/boardsetting',function(request,response){
 app.get('/battleship',function(request,response){
     response.sendFile(__dirname+'/views/battleship.html');
 })
+app.get('/2',function(request,response){
+    response.sendFile(__dirname+'/views/index2.html');
+})
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

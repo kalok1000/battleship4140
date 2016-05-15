@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" href="/stylesheets/style.css" />
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<!--PIXI.js-->
+	<script src="/javascripts/konva.min.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+	<script>
+	var width = 800;
+	var height = 500;
+
+	var stage = new Konva.Stage({
+	  container: 'container',
+	  width: width,
+	  height: height
+	});
+
+	var layer1 = new Konva.Layer();
+	var layer2 = new Konva.Layer();
+	var mapX = 300;
+	var mapY = 0;
+
+	function drawMap(mx,my){
+		for(var i=0;i <= 400;i+=40){
+			var vLine = new Konva.Line({
+			  points: [5, 5, 5, 405],
+			  stroke: 'black',
+			  strokeWidth: 5,
+			  lineCap: 'round',
+			  lineJoin: 'round'
+			});
+
+			vLine.move({
+			  x : i + mx,
+			  y : 5 + my
+			});
+
+			layer1.add(vLine);
+		}
+		
+		for(var i=0;i <= 400;i+=40){
+			var hLine = new Konva.Line({
+			  points: [5, 5, 405, 5],
+			  stroke: 'black',
+			  strokeWidth: 5,
+			  lineCap: 'round',
+			  lineJoin: 'round'
+			});
+
+			hLine.move({
+			  x : 0 + mx,
+			  y : i + 5 + my
+			});
+
+			layer1.add(hLine);
+		}
+	}
+	
+	function drawShip(sx,sy,block,direction){
+		var blockH = block;
+		var blockW = 1;
+		if(direction=="E" || direction=="W"){
+			blockH = 1;
+			blockW = block;
+		}
+		var h = 35*blockH, w = 35*blockW;
+		var imgPath = 'ship' + direction + '.png';
+	
+		var shipImg = new Image();
+		shipImg.onload = function(){
+			var img = new Konva.Image({
+				x : mapX + 7 + sx*40,
+				y : mapY + 20 + sy*40,
+				image : shipImg,
+				width : w,
+				height : h,
+				draggable : true,
+				dragBoundFunc: function(pos) {
+					var newX = pos.x;
+					var newY = pos.y;
+					if(pos.x < mapX + 7){
+						newX = mapX + 7;
+					}
+					if(pos.x > mapX + 368 - 35*(blockW-1)){
+						newX = mapX + 368 - 35*(blockW-1);
+					}
+					if(pos.y < mapY + 20){
+						newY = mapY + 20;
+					}
+					if(pos.y > mapY + 368 - 35*(blockH-1)){
+						newY = mapY + 368 - 35*(blockH-1);
+					}
+					return {
+						x: newX,
+						y: newY
+					};
+				}
+			});
+			
+			img.on('mouseover', function() {
+				document.body.style.cursor = 'pointer';
+			});
+			
+			img.on('mouseout', function() {
+				document.body.style.cursor = 'default';
+			});
+			layer2.add(img);
+			stage.add(layer2);
+		}
+		
+		shipImg.src = "/images/" + imgPath;
+	}
+
+	drawShip(0,0,3,"E");
+	drawShip(1,5,5,"N");
+	drawMap(mapX,mapY);
+	stage.add(layer1);
+	</script>
+</body>
+</html>

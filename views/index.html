@@ -11,14 +11,62 @@
 
   <!-- Latest compiled JavaScript -->
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+  <style>
+    body {
+      background: url("/images/background2.jpg") no-repeat center center fixed;
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+      font-family: 'Exo', sans-serif;
+    }
+    h1{
+      text-align: center;
+    }
+    span{
+      color: #5379fa !important;
+    }
+    k{
+      color: #fff;
+      font-size: 35px;
+      font-weight: 200;
+    }
+    img {
+        text-align: center;
+        width: 100%;
+        height: auto;
+    }
+    div#special {
+      text-align: inherit;
+  }
+  </style>
 </head>
 
 <body>
-  <h1> Welcome to Battleship </h1>
-  <h2> Press login to play </h2>
-  <h2> Or register new account to play</h2>
-  <a href="login" class="btn btn-default">Enter to login page</a>
-  <a href="register" class="btn btn-default">Register new account</a>
+  <div class="container">
+    <div class="row">
+      <h1> Welcome to <k>Battle<span>Ship</span></k> </h1><br>
+    </div>
+    <div class="row">
+      <img src="/images/logo.gif"><br><br><br>
+    </div>
+    <div class="row">
+      <div class="col-md-3">
+
+      </div>
+      <div class="col-md-3">
+        <a href="login" class="btn btn-default"><h4>Login</h4></a>
+      </div>
+      <div class="col-md-2">
+      </div>
+      <div class="col-md-3">
+        <a href="register" class="btn btn-default"><h4>Sign Up</h4></a>
+      </div>
+      <div class="col-md-4">
+      </div>
+    </div>
+  </div>
 
 </body>
 

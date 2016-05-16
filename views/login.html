@@ -1,30 +1,168 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+      body{
+        background: url('/images/background.jpg') no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+      }
 
-<head>
-  <link rel="stylesheet" href="/stylesheets/style.css">
-  <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+      img {
+          text-align: center;
+          width: 100%;
+          height: auto;
+          opacity: 0;
+      }
 
-  <!-- jQuery library -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+      .container {
+        height: 300px;
+        text-align: center;  /* align the inline(-block) elements horizontally */
+        font: 0/0 a;         /* remove the gap between inline(-block) elements */
+      }
 
-  <!-- Latest compiled JavaScript -->
-  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-</head>
+      .container:before {    /* create a full-height inline block pseudo=element */
+          content: ' ';
+          display: inline-block;
+          vertical-align: middle;  /* vertical alignment of the inline element */
+          height: 100%;
+      }
 
-<body>
-  <h1> Battleship </h1>
-  <h2> Login </h2>
-  <form>
-    Username:<br>
-    <input type="text" name="username"><br>
-    Password:<br>
-    <input type="password" name="password">
-  </form>
-  <br>
-  <a href="lobby" class="btn btn-default">Enter to login page</a>
+      #element {
+          display: inline-block;
+          vertical-align: middle;  /* vertical alignment of the inline element */
+          font: 16px/1 Arial sans-serif;        /* <-- reset the font property */
+      }
 
-</body>
+      .col-md p {
+        position: relative;
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+      }
 
+      .header{
+        position: relative;
+      }
+
+      .header div{
+      	color: #fff;
+      	font-family: 'Exo', sans-serif;
+      	font-size: 70px;
+      	font-weight: 200;
+      }
+
+      .header div span{
+      	color: #5379fa !important;
+      }
+
+      .login{
+      	position: relative;
+      }
+
+      .login input[type=text]{
+      	width: 250px;
+      	height: 30px;
+      	background: transparent;
+      	border: 1px solid rgba(255,255,255,0.6);
+      	border-radius: 2px;
+      	color: #fff;
+      	font-family: 'Exo', sans-serif;
+      	font-size: 16px;
+      	font-weight: 400;
+      	padding: 4px;
+      }
+
+      .login input[type=password]{
+      	width: 250px;
+      	height: 30px;
+      	background: transparent;
+      	border: 1px solid rgba(255,255,255,0.6);
+      	border-radius: 2px;
+      	color: #fff;
+      	font-family: 'Exo', sans-serif;
+      	font-size: 16px;
+      	font-weight: 400;
+      	padding: 4px;
+      	margin-top: 10px;
+      }
+
+      .login input[type=button]{
+      	width: 260px;
+      	height: 35px;
+      	background: #fff;
+      	border: 1px solid #fff;
+      	cursor: pointer;
+      	border-radius: 2px;
+      	color: #a18d6c;
+      	font-family: 'Exo', sans-serif;
+      	font-size: 16px;
+      	font-weight: 400;
+      	padding: 6px;
+      	margin-top: 10px;
+      }
+
+      .login input[type=button]:hover{
+      	opacity: 0.8;
+      }
+
+      .login input[type=button]:active{
+      	opacity: 0.6;
+      }
+
+      .login input[type=text]:focus{
+      	outline: none;
+      	border: 1px solid rgba(255,255,255,0.9);
+      }
+
+      .login input[type=password]:focus{
+      	outline: none;
+      	border: 1px solid rgba(255,255,255,0.9);
+      }
+
+      .login input[type=button]:focus{
+      	outline: none;
+      }
+
+      ::-webkit-input-placeholder{
+         color: rgba(255,255,255,0.6);
+      }
+
+      ::-moz-input-placeholder{
+         color: rgba(255,255,255,0.6);
+      }
+    </style>
+
+    <script type="text/JavaScript" src="javascripts/login.js"></script>
+  </head>
+
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <img src="/images/logo.gif">
+      </div>
+      <div class="col-md-2">
+      </div>
+      <div class="col-md-4">
+    		<div class="header">
+    			<div>Battle<span>Ship</span><br>
+          </div>
+    		</div>
+      </div>
+  		<!--br!-->
+      <div class="col-md-6">
+    		<div class="login">
+    				<input type="text" id="username" placeholder="username"><br>
+    				<input type="password" id="password" placeholder="password"><br>
+    				<input type="button" value="Login" onClick="clicked()">
+    		</div>
+      </div>
+    </div>
+  </body>
 </html>

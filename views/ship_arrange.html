@@ -13,10 +13,14 @@
 	<script src="/javascripts/konva.min.js"></script>
 </head>
 <body>
-    <div id="container"></div>
+	<div align="center"><h2>Place Your Ship</h2></div>
+    <div id="container" align="center"></div>
+	<div align="center"><button>Ready To Move On!</button></div>
 	<script>
+	var arrShip = [];
 	var width = 800;
-	var height = 500;
+	var height = 420;
+	var tween = null;
 
 	var stage = new Konva.Stage({
 	  container: 'container',
@@ -26,8 +30,10 @@
 
 	var layer1 = new Konva.Layer();
 	var layer2 = new Konva.Layer();
-	var mapX = 300;
+	var mapX = 190;
 	var mapY = 0;
+	var paddingTop = 10;
+	var shipBlockSize = 38;
 
 	function drawMap(mx,my){
 		for(var i=0;i <= 400;i+=40){
@@ -72,14 +78,14 @@
 			blockH = 1;
 			blockW = block;
 		}
-		var h = 35*blockH, w = 35*blockW;
+		var h = shipBlockSize*blockH, w = shipBlockSize*blockW;
 		var imgPath = 'ship' + direction + '.png';
 	
 		var shipImg = new Image();
 		shipImg.onload = function(){
 			var img = new Konva.Image({
 				x : mapX + 7 + sx*40,
-				y : mapY + 20 + sy*40,
+				y : mapY + paddingTop + sy*40,
 				image : shipImg,
 				width : w,
 				height : h,
@@ -90,20 +96,106 @@
 					if(pos.x < mapX + 7){
 						newX = mapX + 7;
 					}
-					if(pos.x > mapX + 368 - 35*(blockW-1)){
-						newX = mapX + 368 - 35*(blockW-1);
+					if(pos.x > mapX + 368 - shipBlockSize*(blockW-1)){
+						newX = mapX + 368 - shipBlockSize*(blockW-1);
 					}
-					if(pos.y < mapY + 20){
-						newY = mapY + 20;
+					if(pos.y < mapY + paddingTop){
+						newY = mapY + paddingTop;
 					}
-					if(pos.y > mapY + 368 - 35*(blockH-1)){
-						newY = mapY + 368 - 35*(blockH-1);
+					if(pos.y > mapY + 368 - shipBlockSize*(blockH-1)){
+						newY = mapY + 368 - shipBlockSize*(blockH-1);
 					}
+					
+					var nearest = 1000;
+					var nearest_x = newX;
+					var nearest_y = newY;
+					var nearestGridX = sx;
+					var nearestGridY = sy;
+					
+					for(var nx = 0;nx < 10;nx++){
+						for(var ny = 0;ny < 10;ny++){
+						var distance = Math.sqrt(Math.pow(newX - (mapX + 7 + nx*40),2) + Math.pow(newY - (mapY + paddingTop + ny*40),2));
+							if(distance < nearest){
+								nearest = distance;
+								nearest_x = mapX + 7 + nx*40;
+								nearest_y = mapY + paddingTop + ny*40;
+								nearestGridX = nx;
+								nearestGridY = ny;
+							}
+						}
+					}
+					
+					newX = nearest_x;
+					newY = nearest_y;
+					
+					for(var k = 0;k < block;k++){
+						arrShip.forEach(function(item, idx){
+							if(item.x == sx && item.y == sy){
+								return;
+							}
+							for(var m = 0;m < item.block;m++){
+								var selfX,selfY,oppX,oppY;
+								if(direction == "W" | direction == "E"){selfX = nearestGridX + k;selfY = nearestGridY;}
+								if(direction == "N" | direction == "S"){selfX = nearestGridX;selfY = nearestGridY + k;}
+								if(item.direction == "W" | item.direction == "E"){oppX = item.x + m;oppY = item.y;}
+								if(item.direction == "N" | item.direction == "S"){oppX = item.x;oppY = item.y + m;}
+								console.log(selfX + ' ' + selfY + ';' + oppX + ' ' + oppY);
+								if(selfX == oppX && selfY == oppY){
+									newX = mapX + 7 + sx*40;
+									newY = mapY + paddingTop + sy*40;
+								}
+							}
+						});						
+					}
+					
 					return {
 						x: newX,
 						y: newY
 					};
 				}
+			});
+			
+			img.on('fix',function(){
+				var oldX = img.getX();
+				var oldY = img.getY();
+				var newX = img.getX();
+				var newY = img.getY();
+				if(oldX < mapX + 7){
+					newX = mapX + 7;
+				}
+				if(oldX > mapX + 368 - shipBlockSize*(blockW-1)){
+					newX = mapX + 368 - shipBlockSize*(blockW-1);
+				}
+				if(oldY < mapY + paddingTop){
+					newY = mapY + paddingTop;
+				}
+				if(oldY > mapY + 368 - shipBlockSize*(blockH-1)){
+					newY = mapY + 368 - shipBlockSize*(blockH-1);
+				}
+				
+				var nearest = 1000;
+				var nearest_x = newX;
+				var nearest_y = newY;
+				
+				for(var nx = 0;nx < 10;nx++){
+					for(var ny = 0;ny < 10;ny++){
+					var distance = Math.sqrt(Math.pow(newX - (mapX + 7 + nx*40),2) + Math.pow(newY - (mapY + paddingTop + ny*40),2));
+						if(distance < nearest){
+							nearest = distance;
+							nearest_x = mapX + 7 + nx*40;
+							nearest_y = mapY + paddingTop + ny*40;
+						}
+					}
+				}
+				
+				newX = nearest_x;
+				newY = nearest_y;
+				
+				img.position({
+					x : newX,
+					y : newY
+				});
+				layer2.draw();
 			});
 			
 			img.on('mouseover', function() {
@@ -113,15 +205,56 @@
 			img.on('mouseout', function() {
 				document.body.style.cursor = 'default';
 			});
+			
+			img.on('dragstart',function(){
+				arrShip = arrShip.filter(function(item){
+					return (item.x != sx && item.y != sy);
+				});
+			});
+			
+			img.on('dragmove',function(){
+				sx = (img.getX() - 7 -mapX)/40;
+				sy = (img.getY() - paddingTop - mapY)/40;
+			});
+			
+			img.on('dragend',function(){
+				arrShip.push({x:sx,y:sy,block:block,direction:direction});
+			});
+			
+			img.on('dragend',function(){
+				
+			});
+			
+			img.on('dblclick',function(){
+				//alert('rotate');
+				var dir = "";
+				var gridX = (img.getX() - 7 -mapX)/40,gridY = (img.getY() - paddingTop - mapY)/40;
+				
+				if(direction=="N"){dir = "E";}
+				if(direction=="E"){dir = "S";}
+				if(direction=="S"){dir = "W";}
+				if(direction=="W"){dir = "N";}
+				
+				drawShip(gridX,gridY,block,dir);
+				arrShip = arrShip.filter(function(item){
+					return (item.x != sx && item.y != sy);
+				});
+				img.destroy();
+				shipImg.destroy();
+			});
+			
 			layer2.add(img);
 			stage.add(layer2);
+			img.fire('fix');
 		}
 		
 		shipImg.src = "/images/" + imgPath;
+		
+		arrShip.push({x:sx,y:sy,block:block,direction:direction});
 	}
 
-	drawShip(0,0,3,"E");
-	drawShip(1,5,5,"N");
+	drawShip(0,0,3,"S");
+	drawShip(1,3,5,"W");
 	drawMap(mapX,mapY);
 	stage.add(layer1);
 	</script>

@@ -88,3 +88,27 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+var io = require( 'socket.io' )(server);
+io.on('connection', function(socket){
+	var roomId;
+	var ready = 0;
+	console.log('New player connected');
+	
+	socket.on('disconnect',function(){
+		socket.broadcast.to(roomId).emit('playerDisconnected');
+	});
+	socket.on('register',function(data){
+		console.log('User registered');
+		roomId = data;
+		socket.join(data);
+		var playerNumber = io.sockets.adapter.rooms[roomId].length;
+		if (playerNumber == 2){
+			io.to(roomId).emit('playerConnected');
+		}
+	});
+	
+	socket.on('ready',function(){
+		socket.broadcast.to(roomId).emit('ready');
+	});
+});

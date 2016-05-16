@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" href="/stylesheets/style.css" />
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<!--PIXI.js-->
+	<script src="/javascripts/konva.min.js"></script>
+	<script src="/javascripts/com.js"></script>
+</head>
+<body>
+	<div align="center"><h2>Battle!</h2></div>
+	<div id="container" align="center"></div>
+	<script>
+		var arrShip = JSON.parse(getCookie('ships'));
+		alert(arrShip);
+		var width = 1000;
+		var height = 420;
+		
+		var stage = new Konva.Stage({
+		  container: 'container',
+		  width: width,
+		  height: height
+		});
+				
+		var layer1 = new Konva.Layer();
+		var layer2 = new Konva.Layer();
+		var layer3 = new Konva.Layer();
+		
+		var mapX = 0;
+		var mapY = 0;
+		var oppMapX = 570;
+		var oppMapY = 0;
+		var paddingTop = 10;
+		var shipBlockSize = 38;
+		
+		function drawMap(mx,my){
+			var bgImg = new Image();
+			bgImg.onload = function(){
+				var img = new Konva.Image({
+					x : mx + 5,
+					y : my + 10,
+					image : bgImg,
+					width : 400,
+					height : 400,
+					opacity : 0.8
+				});
+				
+				layer3.add(img);
+				stage.add(layer3);
+				layer3.moveDown().moveDown();
+			}
+			
+			bgImg.src = "/images/sea.jpg";
+		
+			for(var i=0;i <= 400;i+=40){
+				var vLine = new Konva.Line({
+				  points: [5, 5, 5, 405],
+				  stroke: 'white',
+				  strokeWidth: 5,
+				  lineCap: 'round',
+				  lineJoin: 'round'
+				});
+
+				vLine.move({
+				  x : i + mx,
+				  y : 5 + my
+				});
+
+				layer1.add(vLine);
+			}
+			
+			for(var i=0;i <= 400;i+=40){
+				var hLine = new Konva.Line({
+				  points: [5, 5, 405, 5],
+				  stroke: 'white',
+				  strokeWidth: 5,
+				  lineCap: 'round',
+				  lineJoin: 'round'
+				});
+
+				hLine.move({
+				  x : 0 + mx,
+				  y : i + 5 + my
+				});
+
+				layer1.add(hLine);
+			}
+		}
+		
+		for(var i = 0;i < arrShip.length;i++){
+			
+		}
+		drawMap(mapX,mapY);
+		//drawMap(oppMapX,oppMapY);
+		stage.add(layer1);
+	</script>
+</body>
+</html>

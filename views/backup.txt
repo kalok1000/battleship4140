@@ -1,0 +1,20 @@
+var overlap = false;
+			var shipsNum = arrShip.length;
+			for(var i = 0;i < shipsNum;i++){
+				var ship = arrShip[i];
+				if(ship.id == id){
+					continue;
+				}
+				
+				if(ship.direction == "W" | ship.direction == "E"){
+					overlap = (ship.x <= x && x < ship.x + ship.block && ship.y == y);
+				} 
+				if(ship.direction == "N" | ship.direction == "S"){
+					overlap = (ship.y <= y && y < ship.y + ship.block && ship.x == x);
+				}
+				
+				if(overlap){
+					return true;
+				}
+			}
+			return false;

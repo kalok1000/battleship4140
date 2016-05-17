@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+    $("button").click(function(){
+        $.get("demo_test.asp", function(data, status){
+            alert("Data: " + data + "\nStatus: " + status);
+        });
+    });
+});
+</script>
 </head>
-
 <body>
-<div class="container">
-    <a href="/get-data">LOAD DATA</a>
-    <div>
-        <article class="item">
-            <div>username: {{ this._id }}</div>
-            <div>password: {{ this.password }}</div>
-            <div>password2: {{ this.password2 }}</div>
-            <div>email: {{ this.email }}</div>
-        </article>
-    </div>
-</div>
+
+<button>Send an HTTP POST request to a page and get the result back</button>
 
 </body>
-
 </html>

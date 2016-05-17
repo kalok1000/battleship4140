@@ -167,8 +167,18 @@
         outline: none;
       }
     </style>
-
-    <script type="text/JavaScript" src="javascripts/login.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="/javascripts/js.cookie.js"></script>
+    <script>
+    $(document).ready(function(){
+        $("button").click(function(){
+            $.get("demo_test.asp", function(data, status){
+                alert("Data: " + data + "\nStatus: " + status);
+            });
+        });
+    });
+    </script>
+</head>
   </head>
 
   <body>
@@ -188,16 +198,45 @@
       		<!--br!-->
           <div class="col-md-6">
         		<div class="login">
-                <form action="/try" method="POST">
+                <form id="loginForm">
             				<input type="text" id="username" name ="username" placeholder="username" /><br>
             				<input type="password" id="password" name ="password" placeholder="password" /><br>
                     <input type="submit" value="Login" />
                 </form>
+
+                <script type="text/javascript">
+                  $("#loginForm").submit(function(e) {
+
+                      var url = "/try"; // the script where you handle the form input.
+
+                      $.ajax({
+                             type: "POST",
+                             url: url,
+                             data: $("#loginForm").serialize(), // serializes the form's elements.
+                             success: function(data)
+                             {
+                                Cookies.set('user', data);
+                                window.location.href = '/lobby';
+                             },
+                             error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                                  alert("Status: " + textStatus); 
+                                  alert("Error: " + errorThrown); 
+                              }
+                           });
+
+                      e.preventDefault(); // avoid to execute the actual submit of the form.
+                  });
+
+                </script>
         		</div>
           </div>
         </div>
         <div class="row">
-        <a href='/' class="btn btn-default bottombutton">Main Menus</a>
+            <button>Send an HTTP GET request to a page and get the result back</button>
+        </div>
+        <div class="row">
+            <a href='/' class="btn btn-default bottombutton">Main Menus</a>
+        </div>
     </div>
   </body>
 </html>

@@ -93,10 +93,13 @@ app.post('/try', function(req, res) {
           assert.equal(null,err);
           if(!obj){
               console.log("Incorrect username or password");
-              res.redirect('/');
+              // res.redirect('/');
+              res.status(404);
+              res.json({error: "Incorrect username or password"});
           }
           else {
-              res.redirect('lobby');
+              //res.redirect('lobby');
+              res.json(obj);
           }
         });
     });

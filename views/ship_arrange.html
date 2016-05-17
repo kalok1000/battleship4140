@@ -9,30 +9,44 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 	<!-- Latest compiled JavaScript -->
 	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-	<!--PIXI.js-->
+	<script src="/javascripts/js.cookie.js"></script>
 	<script src="/javascripts/konva.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
-	<script src="/javascripts/com.js"></script>
 </head>
 <body>
-	<div align="center"><h2>Place Your Ship</h2></div>
-    <div><div id="container" align="left"></div></div>
-	<div align="center"><button id="random">Random</button><button id="ready" disabled="disabled">Wait For Another Player...</button></div>
-	<div id="oppDetails">No opponent</div>
+	<embed loop="true" src="/music/waiting.mp3" hidden="true" type="audio/midi"></embed>
+	<div class="row">
+		<div class="panel panel-danger">
+			<div class="panel-heading">Place Your Ships</div>
+			<div class="panel-body">
+				<div class="col-md-2"></div>
+				<div class="col-md-4" id="container" align="center"></div>
+				<div class="col-md-6" align="center">
+					<div class="row"><button id="random" class="btn btn-primary btn-lg">Random Generate</button></div>
+					<div class="row"><br/></div>
+					<div class="row"><button id="ready" disabled="disabled" class="btn btn-danger btn-lg">Wait For Another Player...</button><br/><br/></div>
+					<div class="row" id="oppDetails">No opponent</div>
+				</div>
+			</div>
+		</div>
+	</div>
 	<script>
+	$(document).ready(function(){
+		
 		var socket = io();
 		var url = window.location.href.split('/')
-		var roomId = url[url.length-2];
+		var roomId = url[url.length-3];
 		var selfReady = false;
 		var oppReady = false;
 		socket.emit('register',roomId);
 		
 		var arrShip = [];
-		var width = 800;
+		var width = 420;
 		var height = 420;
 		var tween = null;
 		var shipsSize = [2,3,3,4,5];
 		var dirArr = ["N","E","S","W"];
+		var sRatio = 1;
 		
 		var mapStatus = [];
 		
@@ -87,7 +101,7 @@
 			var blk = arrShip[idx].block;
 			var _x = arrShip[idx].x;
 			var _y = arrShip[idx].y;
-			console.log('id ' + id + ' x ' + _x);
+			//console.log('id ' + id + ' x ' + _x);
 			
 			for(var j = 0;j < blk;j++){
 				if(dir == "N" || dir == "S"){
@@ -179,8 +193,8 @@
 			var shipImg = new Image();
 			shipImg.onload = function(){
 				var img = new Konva.Image({
-					x : mapX + 7 + sx*40,
-					y : mapY + paddingTop + sy*40,
+					x : mapX + 7 + sx*40*sRatio,
+					y : mapY + paddingTop + sy*40*sRatio,
 					image : shipImg,
 					width : w,
 					height : h,
@@ -209,7 +223,7 @@
 						
 						for(var nx = 0;nx < 10;nx++){
 							for(var ny = 0;ny < 10;ny++){
-							var distance = Math.sqrt(Math.pow(newX - (mapX + 7 + nx*40),2) + Math.pow(newY - (mapY + paddingTop + ny*40),2));
+							var distance = Math.sqrt(Math.pow(newX - (mapX + 7 + nx*40*sRatio),2) + Math.pow(newY - (mapY + paddingTop + ny*40*sRatio),2));
 								if(distance < nearest){
 									nearest = distance;
 									nearest_x = mapX + 7 + nx*40;
@@ -229,6 +243,10 @@
 							if(direction == "W" || direction == "E"){thisX += k}
 							if(direction == "N" || direction == "S"){thisY += k}
 							
+							if(thisX > 9 || thisY > 9){
+								continue;
+							}
+							
 							mapStatus[thisX][thisY] = 0;
 						}
 						
@@ -240,7 +258,7 @@
 							
 							
 							if(overlap(id,thisX,thisY,block)){
-								console.log('overlap at ' + thisX + ' ' + thisY);
+								//console.log('overlap at ' + thisX + ' ' + thisY);
 								return {
 									x : mapX + 7 + sx*40,
 									y : mapY + paddingTop + sy*40,
@@ -283,7 +301,7 @@
 					
 					for(var nx = 0;nx < 10;nx++){
 						for(var ny = 0;ny < 10;ny++){
-						var distance = Math.sqrt(Math.pow(newX - (mapX + 7 + nx*40),2) + Math.pow(newY - (mapY + paddingTop + ny*40),2));
+						var distance = Math.sqrt(Math.pow(newX - (mapX + 7 + nx*40*sRatio),2) + Math.pow(newY - (mapY + paddingTop + ny*40*sRatio),2));
 							if(distance < nearest){
 								nearest = distance;
 								nearest_x = mapX + 7 + nx*40;
@@ -329,7 +347,7 @@
 						for(var m = 0;m < 10;m++){
 							str += mapStatus[m][h] + ' ';
 						}
-						console.log(str);
+						//console.log(str);
 					}
 				});
 				
@@ -343,6 +361,10 @@
 						var thisY = sy;
 						if(direction == "W" || direction == "E"){thisX += k}
 						if(direction == "N" || direction == "S"){thisY += k}
+						
+						if(thisX > 9 || thisY > 9){
+								continue;
+						}
 						
 						mapStatus[thisX][thisY] = 0;
 					}
@@ -359,7 +381,7 @@
 						if(dir == "N" || dir == "S"){thisY += k}
 						
 						if(overlap(id,thisX,thisY,block)){
-							console.log('overlap');
+							//console.log('overlap');
 							return;
 						}
 					}
@@ -382,7 +404,7 @@
 			}
 			//console.log(arrShip);
 		}
-
+		
 		rand();
 		drawMap(mapX,mapY);
 		stage.add(layer1);
@@ -434,28 +456,57 @@
 			}
 		}
 		
+		function scaleStage(ratio){
+			layer2.scale({
+				x:ratio,
+				y:ratio
+			});
+			layer2.draw();
+			layer1.scale({
+				x:ratio,
+				y:ratio
+			});
+			layer1.draw();
+			layer3.scale({
+				x:ratio,
+				y:ratio
+			});
+			layer3.draw();
+			stage.scale({
+				x:ratio,
+				y:ratio
+			});
+			stage.draw();
+			stage.setHeight(height*sRatio);
+		}
+		
 		$('#random').click(function(){
-			$('#random').prop('disabled',true);
+			//$('#random').prop('disabled',true);
 			rand();
 		});
 		
 		$('#ready').click(function(){
 			socket.emit('ready');
 			selfReady = true;
+			stage.listening(false);
+			$('#random').prop("disabled", true);
 			$('#ready').prop( "disabled", true );
-			$('#ready').text("Waiting For The Opponent To Be Ready...");
+			$('#ready').html("Waiting For The <br/>Opponent To Be Ready...");
 		});
 		
 		socket.on('playerConnected',function(){
 			$('#ready').prop( "disabled", false );
+			$('#random').prop("disabled", false);
 			$('#ready').text("Ready To Move On!");
-			$('#oppDetails').text("Opponent entered. Opponent is placing ships...");
+			$('#oppDetails').html("Opponent entered. <br/>Opponent is placing ships...");
 		});
 		
 		socket.on('playerDisconnected',function(){
 			$('#oppDetails').text("No opponent");
 			$('#ready').prop( "disabled", true );
 			$('#ready').text("Wait For Another Player....");
+			stage.listening(true);
+			$('#random').prop("disabled", false);
 		});
 		
 		socket.on('ready',function(){
@@ -463,11 +514,22 @@
 			$('#oppDetails').text("Opponent is ready!");
 			if(selfReady && oppReady){
 				socket.emit('ready');
-				setCookie('ships',JSON.stringify(arrShip),1);
+				Cookies.set('ships',JSON.stringify(arrShip));
 				var host = window.location.href.split('/')[0];
 				location.href = host + '/' + roomId + '/battle/';
 			}
 		});
+		
+		window.onload = function(event){
+			sRatio = $(window).width()/$(document).width();
+			scaleStage(sRatio);
+		}
+		
+		window.onresize = function(event){
+			sRatio = $(window).width()/$(document).width();
+			scaleStage(sRatio);
+		}
+	});
 	</script>
 </body>
 </html>

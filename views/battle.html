@@ -11,53 +11,62 @@
 	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 	<!--PIXI.js-->
 	<script src="/javascripts/konva.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
 	<script src="/javascripts/com.js"></script>
 </head>
 <body>
-	<div align="center"><h2>Battle!</h2></div>
-	<div id="container" align="center"></div>
+	<div class="panel panel-danger">
+		<div class="panel-heading">BATTLE</div>
+		<div class="panel-body">
+			<div class="col-md-3">
+				<div class="row">Your Placing</div>
+				<div id="container" align="center" class="row"></div>
+			</div>
+			<div id="container2" align="center" class="col-md-6"></div>
+		</div>
+	</div>
 	<script>
+		var socket = io();
+		var url = window.location.href.split('/')
+		var roomId = url[url.length-3];
+		socket.emit('register',roomId);
+	
 		var arrShip = JSON.parse(getCookie('ships'));
-		alert(arrShip);
-		var width = 1000;
-		var height = 420;
+		var oppShips;
+		var width = 252;
+		var height = 252;
+		var oppWidth = 420;
+		var oppHeight = 420;
+		var sRatio = 1;
 		
 		var stage = new Konva.Stage({
 		  container: 'container',
 		  width: width,
 		  height: height
 		});
-				
+
 		var layer1 = new Konva.Layer();
 		var layer2 = new Konva.Layer();
 		var layer3 = new Konva.Layer();
 		
+		var oppStage = new Konva.Stage({
+			container: 'container2',
+			width: oppWidth,
+			height: oppHeight
+		});
+				
+		var oppLayer1 = new Konva.Layer();
+		var oppLayer2 = new Konva.Layer();
+		var oppLayer3 = new Konva.Layer();
+				
 		var mapX = 0;
 		var mapY = 0;
-		var oppMapX = 570;
+		var oppMapX = 0;
 		var oppMapY = 0;
 		var paddingTop = 10;
 		var shipBlockSize = 38;
 		
-		function drawMap(mx,my){
-			var bgImg = new Image();
-			bgImg.onload = function(){
-				var img = new Konva.Image({
-					x : mx + 5,
-					y : my + 10,
-					image : bgImg,
-					width : 400,
-					height : 400,
-					opacity : 0.8
-				});
-				
-				layer3.add(img);
-				stage.add(layer3);
-				layer3.moveDown().moveDown();
-			}
-			
-			bgImg.src = "/images/sea.jpg";
-		
+		function drawMap(mx,my,layer){
 			for(var i=0;i <= 400;i+=40){
 				var vLine = new Konva.Line({
 				  points: [5, 5, 5, 405],
@@ -72,7 +81,7 @@
 				  y : 5 + my
 				});
 
-				layer1.add(vLine);
+				layer.add(vLine);
 			}
 			
 			for(var i=0;i <= 400;i+=40){
@@ -89,16 +98,223 @@
 				  y : i + 5 + my
 				});
 
-				layer1.add(hLine);
+				layer.add(hLine);
 			}
 		}
 		
+		function drawShip(sx,sy,block,direction,lastId){
+			var blockH = block;
+			var blockW = 1;
+			var id = lastId;
+			if(direction=="E" || direction=="W"){
+				blockH = 1;
+				blockW = block;
+			}
+			var h = shipBlockSize*blockH, w = shipBlockSize*blockW;
+			var imgPath = 'ship' + direction + '.png';
+		
+			var shipImg = new Image();
+			shipImg.onload = function(){
+				var img = new Konva.Image({
+					x : mapX + 7 + sx*40,
+					y : mapY + paddingTop + sy*40,
+					image : shipImg,
+					width : w,
+					height : h
+				});
+				
+				layer2.add(img);
+				stage.add(layer2);
+			}
+			
+			shipImg.src = "/images/" + imgPath;
+		}
+		
+		function scaleStage(ratio){
+			layer2.scale({
+				x:ratio,
+				y:ratio
+			});
+			layer2.draw();
+			layer1.scale({
+				x:ratio,
+				y:ratio
+			});
+			layer1.draw();
+			layer3.scale({
+				x:ratio,
+				y:ratio
+			});
+			layer3.draw();
+			stage.scale({
+				x:ratio,
+				y:ratio
+			});
+			stage.draw();
+			stage.setHeight(height*sRatio);
+		}	
+		
+		function miss(x,y,attack){
+			var missImg = new Image();
+			missImg.onload = function(){
+				var img = new Konva.Image({
+					x : 7 + x*40,
+					y : paddingTop + y*40,
+					image : missImg,
+					width : shipBlockSize,
+					height : shipBlockSize
+				});
+				if(attack){
+					oppLayer2.add(img);
+					oppStage.add(oppLayer2);
+				}else{
+					layer2.add(img);
+					stage.add(layer2);
+				}
+			}
+			
+			missImg.src = "/images/water.png";
+		}
+		
+		function hit(x,y,attack){
+			var hitImg = new Image();
+			hitImg.onload = function(){
+				var img = new Konva.Image({
+					x : 7 + x*40,
+					y : paddingTop + y*40,
+					image : hitImg,
+					width : shipBlockSize,
+					height : shipBlockSize
+				});
+				if(attack){
+					oppLayer2.add(img);
+					oppStage.add(oppLayer2);
+				}else{
+					layer2.add(img);
+					stage.add(layer2);
+				}
+			}
+			
+			hitImg.src = "/images/explosion.png";
+		}
+		
+		function explode(x,y){
+			var success = false;
+			for(var i = 0;i < arrShip.length;i++){
+				var direction = arrShip[i].direction;
+				var block = arrShip[i].block;
+				var sx = arrShip[i].x;
+				var sy = arrShip[i].y;
+				
+				if(((direction == "E" || direction == "W") && sx <= x && x < sx + block && sy == y) || ((direction == "N" || direction == "S") && sy <= y && y < sy + block && sx == x)){
+					hit(x,y,false);
+					success = true;
+				}else{
+					miss(x,y,false);
+					success = false;
+				}
+			}
+			return success;
+		}
+		
+		var bgImg = new Image();
+		bgImg.onload = function(){
+			var img = new Konva.Image({
+				x : mapX + 5,
+				y : mapY + 10,
+				image : bgImg,
+				width : 400,
+				height : 400,
+				opacity : 0.8
+			});
+			
+			layer3.add(img);
+			stage.add(layer3);
+			layer3.moveDown().moveDown();
+		}
+		
+		bgImg.src = "/images/sea.jpg";
+		
+		var bgImg2 = new Image();
+		bgImg2.onload = function(){
+			var img2 = new Konva.Image({
+				x : oppMapX + 5,
+				y : oppMapY + 10,
+				image : bgImg2,
+				width : 400,
+				height : 400,
+				opacity : 0.8
+			});
+			
+			oppLayer3.add(img2);
+			oppStage.add(oppLayer3);
+			oppLayer3.moveDown().moveDown();
+		}
+
+		bgImg2.src = "/images/sea.jpg";
+		
+		drawMap(mapX,mapY,layer1);
+		drawMap(oppMapX,oppMapY,oppLayer1);
+		
 		for(var i = 0;i < arrShip.length;i++){
+			var ship = arrShip[i];
+			drawShip(ship.x,ship.y,ship.block,ship.direction,-1);
+		}
+		stage.add(layer1);
+		oppStage.add(oppLayer1);
+		scaleStage(0.7);
+		oppStage.add(oppLayer2);
+		
+		oppStage.on('click',function(){
+				var mousePos = oppStage.getPointerPosition();
+				var x = mousePos.x;
+				var y = mousePos.y;
+				var nx = Math.floor(x/40);
+				var ny = Math.floor(y/40);
+				socket.emit('attack',[nx,ny]);
+		});
+		
+		socket.on('playerConnected',function(){
+
+		});
+		
+		socket.on('playerDisconnected',function(){
+			alert('The opponent left!');
+			var host = window.location.href.split('/')[0];
+			location.href = host + '/' + roomId + '/ship/';
+		});
+		
+		socket.on('damage',function(data){
+			var x = data[0];
+			var y = data[1];
+			alert(x + ' ' + y + ' damaged');
+			var success = explode(x,y);
+			if(success){
+				socket.emit('attackSuccess',[x,y]);
+			}else{
+				socket.emit('attackFail',[x,y]);	
+			}
+		});
+		
+		socket.on('attackSuccess',function(data){
+			var x = data[0];
+			var y = data[1];
+			hit(x,y,true);
+		});
+		
+		socket.on('attackFail',function(data){
+			var x = data[0];
+			var y = data[1];
+			miss(x,y,true);
+		});
+		
+		window.onload = function(event){
 			
 		}
-		drawMap(mapX,mapY);
-		//drawMap(oppMapX,oppMapY);
-		stage.add(layer1);
+		
+		window.onresize = function(event){
+			
+		}
 	</script>
 </body>
 </html>

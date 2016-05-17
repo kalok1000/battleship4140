@@ -92,7 +92,7 @@ function onListening() {
 var io = require( 'socket.io' )(server);
 io.on('connection', function(socket){
 	var roomId;
-	var ready = 0;
+	
 	console.log('New player connected');
 	
 	socket.on('disconnect',function(){
@@ -110,5 +110,17 @@ io.on('connection', function(socket){
 	
 	socket.on('ready',function(){
 		socket.broadcast.to(roomId).emit('ready');
+	});
+	
+	socket.on('attack',function(data){
+		socket.broadcast.to(roomId).emit('damage',data);
+	});
+	
+	socket.on('attackSuccess',function(){
+		socket.broadcast.to(roomId).emit('attackSuccess',data);
+	});
+	
+	socket.on('attackFail',function(){
+		socket.broadcast.to(roomId).emit('attackFail',data);
 	});
 });

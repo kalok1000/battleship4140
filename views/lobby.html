@@ -12,17 +12,33 @@
 
   <!-- Latest compiled JavaScript -->
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+  <!--<style>
+      body {
+      background: url("/images/background2.jpg") no-repeat center center fixed;
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+      font-family: 'Exo', sans-serif;
+      }
+  </style>-->
 </head>
 
 <body>
   <h1> Lobby </h1>
-  <a href="boardsetting" class="btn btn-default">Enter random room</a>
   <script type="text/javascript">
-  	
-  	var currentUser = Cookies.getJSON('user');
-  	console.log(currentUser);
-	alert('User name is ' + currentUser.username);
+    setInterval(function()
+    {
+        $.post("/online",function(data){
+          console.log('result' + data);
+        });
+    }, 1000); // This will "refresh" every 1 second
   </script>
+  <a href="boardsetting" class="btn btn-default">Enter random room</a>
+  <!--<script type="text/javascript">
+  	var currentUser = Cookies.getJSON('user');
+  </script>-->
 </body>
 
 </html>

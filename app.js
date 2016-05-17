@@ -104,6 +104,19 @@ app.post('/try', function(req, res) {
     });
 });
 
+app.post('/online', function(req, res) {
+    var myCursor;
+    var result = []; 
+    mongo.connect(uristring, function(err,db) {
+        assert.equal(null, err);
+        myCursor = db.collection('user-data').find();
+
+        console.log(myCursor);
+        db.close();
+    });
+    res.json(result);
+});
+
 app.post('/new', function(req,res, next){
     var user = {
         username : req.body.username,

@@ -3,19 +3,50 @@
 <head>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
-<script>
-$(document).ready(function(){
-    $("button").click(function(){
-        $.get("demo_test.asp", function(data, status){
-            alert("Data: " + data + "\nStatus: " + status);
-        });
-    });
-});
-</script>
 </head>
 <body>
 
-<button>Send an HTTP POST request to a page and get the result back</button>
+<script type="text/javascript">
+if(1){
+		function writeHTMLasJS(){
+		document.write("<div class=\"row\">");
+		document.write("      <div class=\"col-md-3\">");
+		document.write("");
+		document.write("      <\/div>");
+		document.write("      <div class=\"col-md-3\">");
+		document.write("        <a href=\"login\" class=\"btn btn-default\"><h4>Login<\/h4><\/a>");
+		document.write("      <\/div>");
+		document.write("      <div class=\"col-md-2\">");
+		document.write("      <\/div>");
+		document.write("      <div class=\"col-md-3\">");
+		document.write("        <a href=\"register\" class=\"btn btn-default\"><h4>Sign Up<\/h4><\/a>");
+		document.write("      <\/div>");
+		document.write("      <div class=\"col-md-4\">");
+		document.write("      <\/div>");
+		document.write("    <\/div>");
+		}
+} else {
+		function writeHTMLasJS(){
+		document.write("<div class=\"row\">");
+		document.write("      <div class=\"col-md-5\">");
+		document.write("");
+		document.write("      <\/div>");
+		document.write("      <div class=\"col-md-2\">");
+		document.write("        <a href=\"lobby\" class=\"btn btn-default\"><h4>Lobby<\/h4><\/a>");
+		document.write("      <\/div>");
+		document.write("      <div class=\"col-md-5\">");
+		document.write("      <\/div>");
+		document.write("    <\/div>");
+		}
+}
+</script>
 
+<!--
+now place this function call at whatever point
+it needs to write the markup on to the page: -->
+
+<script type="text/javascript">
+writeHTMLasJS();
+</script>
 </body>
 </html>

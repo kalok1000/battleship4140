@@ -92,7 +92,7 @@ app.post('/try', function(req, res) {
         db.collection('user-data').findOne({username: username, password: password}, function(err, obj) {
           assert.equal(null,err);
           if(!obj){
-              console.log("Incorrect username or password");
+              //console.log("Incorrect username or password");
               // res.redirect('/');
               res.status(404);
               res.json({error: "Incorrect username or password"});
@@ -132,6 +132,7 @@ app.post('/new', function(req,res, next){
             db.close();
         });
     });
+
     res.redirect('/');
 });
 

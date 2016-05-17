@@ -87,20 +87,19 @@ var user = mongoose.model('user-data',Schema);
 app.post('/try', function(req, res) {
     var username = req.body.username;
     var password = req.body.password;
-
     mongo.connect(uristring, function(err,db) {
-        user.find({username: username, password: password}, function(err, users) {
-
-          if(users.length > 0){
-
-            console.log('exists');
-          }else{
-
-            console.log('not exists');
+        assert.equal(null, err);
+        db.collection('user-data').findOne({username: username, password: password}, function(err, obj) {
+          assert.equal(null,err);
+          if(!obj){
+              console.log("Incorrect username or password");
+              res.redirect('/');
           }
-        })
+          else {
+              res.redirect('lobby');
+          }
+        });
     });
-    res.sendFile(__dirname+'/views/battleship.html');
 });
 
 app.post('/new', function(req,res, next){
@@ -127,9 +126,10 @@ app.post('/new', function(req,res, next){
         db.collection('user-data').insertOne(user, function(err, result) {
             assert.equal(null, err);
             console.log("User inserted");
-            //db.close();
+            db.close();
         });
     });
+    res.redirect('/');
 });
 
 // app.post('/new', function(req,res){

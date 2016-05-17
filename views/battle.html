@@ -28,14 +28,14 @@
 		<div class="panel-body">
 			<div class="row" align="center"><img src="/images/logo.gif" width="20%"/></div>
 			<div class="row">
-				<div class="col-md-3">
+				<div class="col-md-5">
 					<div class="row" align="center"><h4>Your Placing</h4></div>
 					<div id="container" align="center" class="row" style="margin-left:20px"></div>
 					<div class="row" align="center"><h4>Your Ships Down : <span id="yourShipsDown">0</span>/5</h4></div>
 					<div class="row" align="center"><h4><span id="coolDown">Attack Now!</span></h4></div>
 					<div class="row" align="center"><img id="signal" src="/images/green.gif" width="40%"/></div>
 				</div>
-				<div id="container2" align="center" class="col-md-9"></div>
+				<div id="container2" align="center" class="col-md-3"></div>
 			</div>
 		</div>
 	</div>
@@ -314,7 +314,7 @@
 		scaleStage(0.7);
 		oppStage.add(oppLayer2);
 		
-		oppStage.on('click',function(){
+		oppStage.on('click tap',function(){
 				var mousePos = oppStage.getPointerPosition();
 				var x = mousePos.x;
 				var y = mousePos.y;

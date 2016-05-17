@@ -93,7 +93,7 @@
       	margin-top: 10px;
       }
 
-      .login input[type=button]{
+      .login input[type=submit]{
       	width: 260px;
       	height: 35px;
       	background: #fff;
@@ -108,11 +108,11 @@
       	margin-top: 10px;
       }
 
-      .login input[type=button]:hover{
+      .login input[type=submit]:hover{
       	opacity: 0.8;
       }
 
-      .login input[type=button]:active{
+      .login input[type=submit]:active{
       	opacity: 0.6;
       }
 
@@ -126,7 +126,7 @@
       	border: 1px solid rgba(255,255,255,0.9);
       }
 
-      .login input[type=button]:focus{
+      .login input[type=submit]:focus{
       	outline: none;
       }
 
@@ -137,9 +137,48 @@
       ::-moz-input-placeholder{
          color: rgba(255,255,255,0.6);
       }
-    </style>
 
-    <script type="text/JavaScript" src="javascripts/login.js"></script>
+      .bottombutton {
+          position: fixed;
+          bottom: 3px;
+          right: 3px;
+          width: 100px;
+          height: 35px;
+          background: #fff;
+          border: 1px solid #fff;
+          cursor: pointer;
+          border-radius: 2px;
+          color: #a18d6c;
+          font-family: 'Exo', sans-serif;
+          font-size: 16px;
+          font-weight: 400;
+          padding: 6px;
+          margin-top: 10px;
+      }
+
+      .bottombutton:hover{
+        opacity: 0.8;
+      }
+
+      .bottombutton:active{
+        opacity: 0.6;
+      }
+      .bottombutton:focus{
+        outline: none;
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="/javascripts/js.cookie.js"></script>
+    <script>
+    $(document).ready(function(){
+        $("button").click(function(){
+            $.get("demo_test.asp", function(data, status){
+                alert("Data: " + data + "\nStatus: " + status);
+            });
+        });
+    });
+    </script>
+</head>
   </head>
 
   <body>
@@ -147,22 +186,57 @@
       <div class="row">
         <img src="/images/logo.gif">
       </div>
-      <div class="col-md-2">
-      </div>
-      <div class="col-md-4">
-    		<div class="header">
-    			<div>Battle<span>Ship</span><br>
+      <div class="row">
+          <div class="col-md-2">
           </div>
-    		</div>
-      </div>
-  		<!--br!-->
-      <div class="col-md-6">
-    		<div class="login">
-    				<input type="text" id="username" placeholder="username"><br>
-    				<input type="password" id="password" placeholder="password"><br>
-    				<input type="button" value="Login" onClick="clicked()">
-    		</div>
-      </div>
+          <div class="col-md-4">
+        		<div class="header">
+        			<div>Battle<span>Ship</span><br>
+              </div>
+        		</div>
+          </div>
+      		<!--br!-->
+          <div class="col-md-6">
+        		<div class="login">
+                <form id="loginForm">
+            				<input type="text" id="username" name ="username" placeholder="username" /><br>
+            				<input type="password" id="password" name ="password" placeholder="password" /><br>
+                    <input type="submit" value="Login" />
+                </form>
+
+                <script type="text/javascript">
+                  $("#loginForm").submit(function(e) {
+
+                      var url = "/try"; // the script where you handle the form input.
+
+                      $.ajax({
+                             type: "POST",
+                             url: url,
+                             data: $("#loginForm").serialize(), // serializes the form's elements.
+                             success: function(data)
+                             {
+                                Cookies.set('user', data);
+                                window.location.href = '/lobby';
+                             },
+                             error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                                  alert("Status: " + textStatus); 
+                                  alert("Error: " + errorThrown); 
+                              }
+                           });
+
+                      e.preventDefault(); // avoid to execute the actual submit of the form.
+                  });
+
+                </script>
+        		</div>
+          </div>
+        </div>
+        <div class="row">
+            <button>Send an HTTP GET request to a page and get the result back</button>
+        </div>
+        <div class="row">
+            <a href='/' class="btn btn-default bottombutton">Main Menus</a>
+        </div>
     </div>
   </body>
 </html>

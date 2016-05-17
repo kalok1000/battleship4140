@@ -4,6 +4,23 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var mongo = require('mongodb');
+var mongoose = require('mongoose');
+var assert = require('assert');
+
+var uristring =
+    process.env.MONGOLAB_URI ||
+    process.env.MONGODB_URI ||
+    process.env.MONGOHQ_URL ||
+    'mongodb://milk:y5071826@ds035703.mlab.com:35703/battleship';
+
+/*mongoose.connect(uristring, function (err, res) {
+    if (err) {
+        console.log('ERROR connecting to: ' + uristring + '. ' + err);
+    } else {
+        console.log('Succeeded connected to: ' + uristring);
+    }
+});*/
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -22,7 +39,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-//app.use('/', routes);
+app.use('/', routes);
 app.use('/users', users);
 
 app.get("/:id([0-9]+)/ship/",function(req,res,next){
@@ -38,22 +55,90 @@ app.get("/:id([0-9]+)/battle/",function(req,res,next){
 
 app.get('/',function(request,response){
     response.sendFile(__dirname+'/views/index.html');
-})
+});
 app.get('/login',function(request,response){
     response.sendFile(__dirname+'/views/login.html');
-})
+});
 app.get('/register',function(request,response){
     response.sendFile(__dirname+'/views/register.html');
-})
+});
 app.get('/lobby',function(request,response){
     response.sendFile(__dirname+'/views/lobby.html');
-})
+});
 app.get('/boardsetting',function(request,response){
     response.sendFile(__dirname+'/views/boardsetting.html');
-})
+});
 app.get('/battleship',function(request,response){
     response.sendFile(__dirname+'/views/battleship.html');
-})
+});
+app.get('/test', function(request, response){
+    response.sendFile(__dirname+'/views/test.html');
+});
+
+var Schema = new mongoose.Schema({
+    username : {type: String, unique: true},
+    password : String,
+    password2: String,
+    email: String
+});
+
+var user = mongoose.model('user-data',Schema);
+
+app.post('/try', function(req, res) {
+    var username = req.body.username;
+    var password = req.body.password;
+    mongo.connect(uristring, function(err,db) {
+        assert.equal(null, err);
+        db.collection('user-data').findOne({username: username, password: password}, function(err, obj) {
+          assert.equal(null,err);
+          if(!obj){
+              console.log("Incorrect username or password");
+              // res.redirect('/');
+              res.status(404);
+              res.json({error: "Incorrect username or password"});
+          }
+          else {
+              //res.redirect('lobby');
+              res.json(obj);
+          }
+        });
+    });
+});
+
+app.post('/new', function(req,res, next){
+    /*new user({
+        _id : req.body.username,
+        password : req.body.password,
+        password2 : req.body.password2,
+        email : req.body.email
+    }).save(function(err,doc) {
+        if(err)  res.json(err);
+        else { 
+          res.redirect("/");
+        }
+    });*/
+    var user = {
+        username : req.body.username,
+        password : req.body.password,
+        password2 : req.body.password2,
+        email : req.body.email
+    };
+
+    mongo.connect(uristring, function(err,db) {
+        assert.equal(null, err);
+        db.collection('user-data').insertOne(user, function(err, result) {
+            assert.equal(null, err);
+            console.log("User inserted");
+            db.close();
+        });
+    });
+    res.redirect('/');
+});
+
+// app.post('/new', function(req,res){
+//     var username = req.body.username;
+//     console.log(username);
+// })
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -2,31 +2,227 @@
 <html>
 
 <head>
-  <link rel="stylesheet" href="/stylesheets/style.css">
-  <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+      body{
+        background: url('/images/background.jpg') no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+      }
 
-  <!-- jQuery library -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+      img {
+          text-align: center;
+          width: 100%;
+          height: auto;
+          opacity: 0;
+      }
 
-  <!-- Latest compiled JavaScript -->
-  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-</head>
+      .container {
+        height: 300px;
+        text-align: center;  /* align the inline(-block) elements horizontally */
+        font: 0/0 a;         /* remove the gap between inline(-block) elements */
+      }
+
+      .container:before {    /* create a full-height inline block pseudo=element */
+          content: ' ';
+          display: inline-block;
+          vertical-align: middle;  /* vertical alignment of the inline element */
+          height: 100%;
+      }
+
+      #element {
+          display: inline-block;
+          vertical-align: middle;  /* vertical alignment of the inline element */
+          font: 16px/1 Arial sans-serif;        /* <-- reset the font property */
+      }
+
+      .col-md p {
+        position: relative;
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+      }
+
+      .header{
+        position: relative;
+      }
+
+      .header div{
+        color: #fff;
+        font-family: 'Exo', sans-serif;
+        font-size: 70px;
+        font-weight: 200;
+      }
+
+      .header div span{
+        color: #5379fa !important;
+      }
+
+      .register{
+        position: relative;
+      }
+
+      .register input[type=text]{
+        width: 250px;
+        height: 30px;
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.6);
+        border-radius: 2px;
+        color: #fff;
+        font-family: 'Exo', sans-serif;
+        font-size: 16px;
+        font-weight: 400;
+        padding: 4px;
+      }
+
+      .register input[type=password]{
+        width: 250px;
+        height: 30px;
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.6);
+        border-radius: 2px;
+        color: #fff;
+        font-family: 'Exo', sans-serif;
+        font-size: 16px;
+        font-weight: 400;
+        padding: 4px;
+        margin-top: 10px;
+      }
+
+      .register input[type=submit]{
+        width: 260px;
+        height: 35px;
+        background: #fff;
+        border: 1px solid #fff;
+        cursor: pointer;
+        border-radius: 2px;
+        color: #a18d6c;
+        font-family: 'Exo', sans-serif;
+        font-size: 16px;
+        font-weight: 400;
+        padding: 6px;
+        margin-top: 10px;
+      }
+
+      .register input[type=email]{
+        width: 250px;
+        height: 30px;
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.6);
+        border-radius: 2px;
+        color: #fff;
+        font-family: 'Exo', sans-serif;
+        font-size: 16px;
+        font-weight: 400;
+        padding: 4px;
+        margin-top: 10px;
+      }
+
+      .register input[type=submit]:hover{
+        opacity: 0.8;
+      }
+
+      .register input[type=sumbit]:active{
+        opacity: 0.6;
+      }
+
+      .register input[type=text]:focus{
+        outline: none;
+        border: 1px solid rgba(255,255,255,0.9);
+      }
+
+      .register input[type=password]:focus{
+        outline: none;
+        border: 1px solid rgba(255,255,255,0.9);
+      }
+
+      .register input[type=email]:focus{
+        outline: none;
+        border: 1px solid rgba(255,255,255,0.9);
+      }
+
+      .register input[type=submit]:focus{
+        outline: none;
+      }
+
+      ::-webkit-input-placeholder{
+         color: rgba(255,255,255,0.6);
+      }
+
+      ::-moz-input-placeholder{
+         color: rgba(255,255,255,0.6);
+      }
+
+      .bottombutton {
+          position: fixed;
+          bottom: 3px;
+          right: 3px;
+          width: 100px;
+          height: 35px;
+          background: #fff;
+          border: 1px solid #fff;
+          cursor: pointer;
+          border-radius: 2px;
+          color: #a18d6c;
+          font-family: 'Exo', sans-serif;
+          font-size: 16px;
+          font-weight: 400;
+          padding: 6px;
+          margin-top: 10px;
+      }
+
+      .bottombutton:hover{
+        opacity: 0.8;
+      }
+
+      .bottombutton:active{
+        opacity: 0.6;
+      }
+      .bottombutton:focus{
+        outline: none;
+      }
+    </style>
+
+    <!--<script type="text/JavaScript" src="javascripts/login.js"></script>!-->
+  </head>
 
 <body>
-  <h1> Battleship </h1>
-  <h2> Register </h2>
-  <form>
-    Username:<br>
-    <input type="text" name="username">
-    <button type="button">Check user name been used?</button><br>
-    Password:<br>
-    <input type="password" name="password"><br>
-    Re-enter Password:<br>
-    <input type="password" name="passwordcheck">
-  </form>
-  <br>
-  <a href="/" class="btn btn-default">Register</a>
+  <div class="container-fluid">
+      <div class="row">
+        <img src="/images/logo.gif">
+      </div>
+      <div class="row">
+          <div class="col-md-2">
+          </div>
+          <div class="col-md-4">
+            <div class="header">
+              <div>Battle<span>Ship</span><br>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+              <div class="register">
+                  <form action="/new" method="POST">
+                    <input type="text" name="username" placeholder="Username" required /><br>
+                    <!--<button type="button">Check user name been used?</button><br>!-->
+                    <input title="Password must contain at least 6 characters, including UPPER, lowercase and numbers" type="password" name="password" placeholder="Password" required onchange="form.password2.pattern = this.value;" /><br>
+                    <input title="Please enter the same Password as above" type="password" name="password2" placeholder="Re-enter Password" onchange="
+      this.setCustomValidity(this.validity.patternMismatch ? this.title : '');" required /><br>
+                    <input type="email" name="email" placeholder="Email Address" required /><br>
+                    <input type="submit" value="Register"/>
+                  </form>
+              </div>
+          </div>
+      </div>
+      <div class="row">
+        <a href='/' class="btn btn-default bottombutton">Main Menus</a>
+      </div>
+  </div>
 
 </body>
 

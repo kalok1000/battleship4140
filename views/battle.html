@@ -2,6 +2,7 @@
 <html>
 
 <head>
+	<title>BattleShip</title>
 	<link rel="stylesheet" href="/stylesheets/style.css" />
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
@@ -12,19 +13,30 @@
 	<script src="/javascripts/js.cookie.js"></script>
 	<script src="/javascripts/konva.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<style>
+		body {
+			background-image: url("/images/background.jpg");
+		}
+	</style>
 </head>
 <body>
-	<embed loop="true" src="/music/battle.mp3" hidden="true" type="audio/midi"></embed>
-	<div class="panel panel-danger">
-		<div class="panel-heading">BATTLE</div>
+	<audio autoplay loop>
+		<source src="/music/battle.mp3" type="audio/mpeg">
+		Your browser does not support the audio element.
+	</audio>
+	<div class="panel panel-danger" style="background: none;">
 		<div class="panel-body">
-			<div class="col-md-3">
-				<div class="row">Your Placing</div>
-				<div id="container" align="center" class="row"></div>
-				<div class="row" align="center"><h4>Your Ships Down : <span id="yourShipsDown">0</span>/5</h4></div>
-				<div class="row"" align="center"><h4>Opponent's Ships Down : <span id="oppShipsDown">0</span>/5</h4></div>
+			<div class="row" align="center"><img src="/images/logo.gif" width="20%"/></div>
+			<div class="row">
+				<div class="col-md-3">
+					<div class="row" align="center">Your Placing</div>
+					<div id="container" align="center" class="row" style="margin-left:20px"></div>
+					<div class="row" align="center"><h4>Your Ships Down : <span id="yourShipsDown">0</span>/5</h4></div>
+					<div class="row" align="center"><h4><span id="coolDown">Attack Now!</span></h4></div>
+					<div class="row" align="center"><img id="signal" src="/images/green.gif" width="40%"/></div>
+				</div>
+				<div id="container2" align="center" class="col-md-6"></div>
 			</div>
-			<div id="container2" align="center" class="col-md-6"></div>
 		</div>
 	</div>
 	<script>
@@ -47,6 +59,10 @@
 		var sRatio = 1;
 		var yourShipsDown = 0;
 		var oppShipsDown = 0;
+		var gameOver = false;
+		var coolDown = 0;
+		var stop = new sound('/sounds/stop.wav');
+		var go = new sound('/sounds/go.wav');
 		
 		var stage = new Konva.Stage({
 		  container: 'container',
@@ -94,7 +110,7 @@
 			for(var i=0;i <= 400;i+=40){
 				var vLine = new Konva.Line({
 				  points: [5, 5, 5, 405],
-				  stroke: 'white',
+				  stroke: '#996633',
 				  strokeWidth: 5,
 				  lineCap: 'round',
 				  lineJoin: 'round'
@@ -111,7 +127,7 @@
 			for(var i=0;i <= 400;i+=40){
 				var hLine = new Konva.Line({
 				  points: [5, 5, 405, 5],
-				  stroke: 'white',
+				  stroke: '#996633',
 				  strokeWidth: 5,
 				  lineCap: 'round',
 				  lineJoin: 'round'
@@ -306,6 +322,7 @@
 				var ny = Math.floor((y-10)/40);
 				if(nx >= 0 && nx < 10 && ny >= 0 && ny < 10){
 					socket.emit('attack',[nx,ny]);
+					oppStage.listening(false);
 				}
 		});
 		
@@ -314,9 +331,11 @@
 		});
 		
 		socket.on('playerDisconnected',function(){
-			alert('The opponent left!');
-			var host = window.location.href.split('/')[0];
-			location.href = host + '/' + roomId + '/ship/';
+			if(!gameOver){
+				alert('The opponent left!');
+				var host = window.location.href.split('/')[0];
+				location.href = host + '/' + roomId + '/ship/';
+			}
 		});
 		
 		socket.on('damage',function(data){
@@ -327,6 +346,9 @@
 				socket.emit('success',[x,y,yourShipsDown]);
 				if(yourShipsDown == 5){
 					alert('You lose!');
+					var host = window.location.href.split('/')[0];
+					location.href = host + '/' + roomId + '/ship/';
+					gameOver = true;
 				}
 			}else{
 				socket.emit('fail',[x,y]);	
@@ -337,11 +359,17 @@
 			var x = data[0];
 			var y = data[1];
 			hit(x,y,true);
-			$('#oppShipsDown').text(data[2]);
+			
+			oppStage.listening(true);
+			$('#coolDown').text('Keep Attacking!');
+			go.play();
 			if(data[2] == 5){
 				alert('You win!');
 				stage.listening(false);
 				oppStage.listening(false);
+				var host = window.location.href.split('/')[0];
+				location.href = host + '/' + roomId + '/ship/';
+				gameOver = true;
 			}
 		});
 		
@@ -349,22 +377,35 @@
 			var x = data[0];
 			var y = data[1];
 			miss(x,y,true);
+			$('#signal').attr('src','/images/red.gif');
+			$('#coolDown').text('Cooling Down...');
+			stop.play();
+			setTimeout(function(){
+				oppStage.listening(true);
+				$('#coolDown').text('Attack Now!');
+				$('#signal').attr('src','/images/green.gif');
+				go.play();
+			},2000);
+			setTimeout(function(){
+				$('#signal').attr('src','/images/yellow.gif');
+				stop.play();
+			},1000);
 		});
 		
-		var ptrImg = new Image();
-		ptrImg.onload = function(){
-				var img = new Konva.Image({
-					x : 7 + 0*40,
-					y : paddingTop + 0*40,
-					image : ptrImg,
-					width : shipBlockSize,
-					height : shipBlockSize
-				});
-				oppLayer2.add(img);
-				oppStage.add(oppLayer2);
-			}
+		//var ptrImg = new Image();
+		//ptrImg.onload = function(){
+		//		var img = new Konva.Image({
+		//			x : 7 + 0*40,
+		//			y : paddingTop + 0*40,
+		//			image : ptrImg,
+		//			width : shipBlockSize,
+		//			height : shipBlockSize
+		//		});
+		//		oppLayer2.add(img);
+		//		oppStage.add(oppLayer2);
+		//	}
 			
-		ptrImg.src = "/images/explosion.png";
+		//ptrImg.src = "/images/explosion.png";
 		
 		oppStage.on('mouseover', function() {
 			document.body.style.cursor = 'pointer';

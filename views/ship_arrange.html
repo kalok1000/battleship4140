@@ -2,6 +2,7 @@
 <html>
 
 <head>
+	<title>BattleShip</title>
 	<link rel="stylesheet" href="/stylesheets/style.css" />
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
@@ -12,20 +13,30 @@
 	<script src="/javascripts/js.cookie.js"></script>
 	<script src="/javascripts/konva.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<style>
+		body {
+			background-image: url("/images/background2.jpg");
+		}
+	</style>
 </head>
 <body>
-	<embed loop="true" src="/music/waiting.mp3" hidden="true" type="audio/midi"></embed>
+	<audio autoplay loop>
+		<source src="/music/waiting.mp3" type="audio/mpeg">
+		Your browser does not support the audio element.
+	</audio>
 	<div class="row">
-		<div class="panel panel-danger">
-			<div class="panel-heading">Place Your Ships</div>
+		<div class="panel panel-danger" style="background-color: transparent;">
 			<div class="panel-body">
-				<div class="col-md-2"></div>
-				<div class="col-md-4" id="container" align="center"></div>
-				<div class="col-md-6" align="center">
-					<div class="row"><button id="random" class="btn btn-primary btn-lg">Random Generate</button></div>
-					<div class="row"><br/></div>
-					<div class="row"><button id="ready" disabled="disabled" class="btn btn-danger btn-lg">Wait For Another Player...</button><br/><br/></div>
-					<div class="row" id="oppDetails">No opponent</div>
+				<div class="row" align="center"><img src="/images/logo.gif" width="20%"/></div>
+				<div class="row">
+					<div class="col-md-2"></div>
+					<div class="col-md-4" id="container" align="center"></div>
+					<div class="col-md-6" align="center">
+						<div class="row"><button id="random" class="btn btn-primary btn-lg">Random Generate</button></div>
+						<div class="row"><br/></div>
+						<div class="row"><button id="ready" disabled="disabled" class="btn btn-danger btn-lg">Wait For Another Player...</button><br/><br/></div>
+						<div class="row"><h4><span id="oppDetails">No opponent</span></h4></div>
+					</div>
 				</div>
 			</div>
 		</div>

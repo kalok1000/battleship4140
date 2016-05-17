@@ -70,6 +70,27 @@ app.get("/create/",function(req,res,next){
 	res.redirect('/../' + roomId + '/ship/');
 });
 
+app.get('/random/',function(req,res,next){
+	var roomId;
+	var exists;
+	do{
+		exists = true;
+		roomId = Math.floor(Math.random()*10000);
+		
+		mongo.connect(uristring, function(err,db) {
+			assert.equal(null, err);
+			db.collection('room-data').findOne({roomId:roomId,players:1}, function(err, obj) {
+				 assert.equal(null,err);
+				 if(!obj){
+					 exists = false;
+				 }
+			});
+		});
+	}while(!exists);
+	
+	res.redirect('/' + roomId + '/ship/');
+});
+
 app.get('/:id([0-9]+)/leave/',function(req,res,next){
 	var roomId = req.params.id;
 	

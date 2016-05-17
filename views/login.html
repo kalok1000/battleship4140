@@ -2,6 +2,7 @@
 <html>
   <head>
     <link rel="stylesheet" href="/stylesheets/style.css">
+    <script src="/javascripts/js.cookie.js"></script>
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <style>
@@ -168,15 +169,6 @@
       }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
-    <script src="/javascripts/js.cookie.js"></script>
-    <script>
-    $(document).ready(function(){
-        $("button").click(function(){
-            $.get("demo_test.asp", function(data, status){
-                alert("Data: " + data + "\nStatus: " + status);
-            });
-        });
-    });
     </script>
 </head>
   </head>
@@ -219,8 +211,9 @@
                                 window.location.href = '/lobby';
                              },
                              error: function(XMLHttpRequest, textStatus, errorThrown) { 
-                                  alert("Status: " + textStatus); 
-                                  alert("Error: " + errorThrown); 
+                                  //alert("Status: " + textStatus); 
+                                  //alert("Error: " + errorThrown); 
+                                  alert("Incorrect username or password");
                               }
                            });
 
@@ -230,9 +223,6 @@
                 </script>
         		</div>
           </div>
-        </div>
-        <div class="row">
-            <button>Send an HTTP GET request to a page and get the result back</button>
         </div>
         <div class="row">
             <a href='/' class="btn btn-default bottombutton">Main Menus</a>

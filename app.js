@@ -42,7 +42,82 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 
+var Room = new mongoose.Schema({
+    roomId : {type: String, unique: true},
+    players : { type: Number, default: 0 }
+});
+
+var room = mongoose.model('room-data',Room);
+
+app.get("/create/",function(req,res,next){
+	var roomId;
+	var exists;
+	do{
+		exists = false;
+		roomId = Math.floor(Math.random()*10000);
+		
+		mongo.connect(uristring, function(err,db) {
+			assert.equal(null, err);
+			db.collection('room-data').findOne({roomId:roomId}, function(err, obj) {
+				 assert.equal(null,err);
+				 if(obj){
+					 exists = true;
+				 }
+			});
+		});
+	}while(exists);
+	
+	res.redirect('/../' + roomId + '/ship/');
+});
+
+app.get('/:id([0-9]+)/leave/',function(req,res,next){
+	var roomId = req.params.id;
+	
+	mongo.connect(uristring, function(err,db) {
+		assert.equal(null, err);
+		db.collection('room-data').findOne({roomId:roomId}, function(err, obj) {
+			assert.equal(null,err);
+			if(obj){
+				if(obj.players == 2){
+					assert.equal(null, err);
+					db.collection('room-data').update({roomId:roomId},{roomId:roomId, players : 1});
+				}else if(obj.players == 1){
+					assert.equal(null, err);
+					db.collection('room-data').remove({roomId:roomId});
+				}
+			}
+		});
+	});
+	
+	res.redirect('/lobby/');
+});
+
 app.get("/:id([0-9]+)/ship/",function(req,res,next){
+	mongo.connect(uristring, function(err,db) {
+		assert.equal(null, err);
+        db.collection('room-data').findOne({roomId:req.params.id}, function(err, obj) {
+          assert.equal(null,err);
+          if(obj){
+              console.log('Exists');
+			  
+			  assert.equal(null, err);
+			  db.collection('room-data').update({roomId:req.params.id},{roomId:req.params.id, players : 2});
+          }
+          else {
+             console.log('not exists');
+			 var room = {
+				roomId : req.params.id,
+				players : 1
+			};
+			
+			assert.equal(null, err);
+			db.collection('room-data').insertOne(room, function(err, result) {
+				assert.equal(null, err);
+				console.log("Room inserted");
+			});
+          }
+        });
+	});
 	 if(!req.cookies.roomId){
 		 res.cookie('roomId', req.params.id, {maxAge: 60 * 1000});
 	 }

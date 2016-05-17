@@ -97,6 +97,7 @@ io.on('connection', function(socket){
 	
 	socket.on('disconnect',function(){
 		socket.broadcast.to(roomId).emit('playerDisconnected');
+		
 	});
 	socket.on('register',function(data){
 		console.log('User registered');
@@ -116,11 +117,11 @@ io.on('connection', function(socket){
 		socket.broadcast.to(roomId).emit('damage',data);
 	});
 	
-	socket.on('attackSuccess',function(){
-		socket.broadcast.to(roomId).emit('attackSuccess',data);
+	socket.on('success',function(){
+		socket.broadcast.to(roomId).emit('success',data);
 	});
 	
-	socket.on('attackFail',function(){
-		socket.broadcast.to(roomId).emit('attackFail',data);
+	socket.on('fail',function(){
+		socket.broadcast.to(roomId).emit('fail',data);
 	});
 });

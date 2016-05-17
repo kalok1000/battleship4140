@@ -32,6 +32,11 @@
 		socket.emit('register',roomId);
 	
 		var arrShip = JSON.parse(getCookie('ships'));
+		
+		for(var z = 0;z < arrShip;z++){
+			arrShip[z].hit = 0;
+		}
+		
 		var oppShips;
 		var width = 252;
 		var height = 252;
@@ -209,6 +214,7 @@
 				if(((direction == "E" || direction == "W") && sx <= x && x < sx + block && sy == y) || ((direction == "N" || direction == "S") && sy <= y && y < sy + block && sx == x)){
 					hit(x,y,false);
 					success = true;
+					arrShip[i].hit += 1;
 				}else{
 					miss(x,y,false);
 					success = false;
@@ -290,19 +296,19 @@
 			alert(x + ' ' + y + ' damaged');
 			var success = explode(x,y);
 			if(success){
-				socket.emit('attackSuccess',[x,y]);
+				socket.emit('success',[x,y]);
 			}else{
-				socket.emit('attackFail',[x,y]);	
+				socket.emit('fail',[x,y]);	
 			}
 		});
 		
-		socket.on('attackSuccess',function(data){
+		socket.on('success',function(data){
 			var x = data[0];
 			var y = data[1];
 			hit(x,y,true);
 		});
 		
-		socket.on('attackFail',function(data){
+		socket.on('fail',function(data){
 			var x = data[0];
 			var y = data[1];
 			miss(x,y,true);

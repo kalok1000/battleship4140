@@ -117,11 +117,11 @@ io.on('connection', function(socket){
 		socket.broadcast.to(roomId).emit('damage',data);
 	});
 	
-	socket.on('success',function(){
+	socket.on('success',function(data){
 		socket.broadcast.to(roomId).emit('success',data);
 	});
 	
-	socket.on('fail',function(){
+	socket.on('fail',function(data){
 		socket.broadcast.to(roomId).emit('fail',data);
 	});
 });

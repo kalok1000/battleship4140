@@ -41,6 +41,10 @@
     div#special {
       text-align: inherit;
     }
+
+    /*input[type='sumbit'] {
+      font-size: 18px;
+    }*/
   </style>
 </head>
 
@@ -82,44 +86,46 @@
       } else {
           function writeHTMLasJS(){
               document.write("<div class=\"row\">");
-              document.write("      <div class=\"col-md-5\">");
+              document.write("      <div class=\"col-md-3\">");
               document.write("");
               document.write("      <\/div>");
-              document.write("      <div class=\"col-md-2\">");
+              document.write("      <div class=\"col-md-3\">");
               document.write("        <a href=\"lobby\" class=\"btn btn-default\"><h4>Lobby<\/h4><\/a>");
               document.write("      <\/div>");
-              document.write("      <div class=\"col-md-5\">");
+              document.write("      <div class=\"col-md-2\">");
+              document.write("      <\/div>");
+              document.write("      <div class=\"col-md-3\">");
+              document.write("<a id=\"log\" href=\"#\" class=\"btn btn-default\"><h4>Logout<\/h4><\/a>");
+              document.write("      <\/div>");
+              document.write("      <div class=\"col-md-4\">");
               document.write("      <\/div>");
               document.write("    <\/div>");
           }
       }
     </script>
 
-<!--
-now place this function call at whatever point
-it needs to write the markup on to the page: -->
+    <script type="text/javascript">
+      writeHTMLasJS();
 
-<script type="text/javascript">
-writeHTMLasJS();
-</script>
-    <!--
-    <div class="row">
-      <div class="col-md-3">
+      $("#log").click(function(e) {
 
-      </div>
-      <div class="col-md-3">
-        <a href="login" class="btn btn-default"><h4>Login</h4></a>
-      </div>
-      <div class="col-md-2">
-      </div>
-      <div class="col-md-3">
-        <a href="register" class="btn btn-default"><h4>Sign Up</h4></a>
-      </div>
-      <div class="col-md-4">
-      </div>
-    </div>
-    -->
+        var url = "/logout"; // the script where you handle the form input.
 
+        $.ajax({
+               type: "POST",
+               url: url,
+               data: $("#log").serialize(), // serializes the form's elements.
+               success: function(data)
+               {
+                  Cookies.remove('user');
+                  alert("successful logout");
+                  window.location.href = '/';
+               }
+             });
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+    });
+  </script>
   </div>
 
 </body>

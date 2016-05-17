@@ -11,119 +11,463 @@
 	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 	<!--PIXI.js-->
 	<script src="/javascripts/konva.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="/javascripts/com.js"></script>
 </head>
 <body>
-    <div id="container"></div>
+	<div align="center"><h2>Place Your Ship</h2></div>
+    <div><div id="container" align="left"></div></div>
+	<div align="center"><button id="random">Random</button><button id="ready" disabled="disabled">Wait For Another Player...</button></div>
+	<div id="oppDetails">No opponent</div>
 	<script>
-	var width = 800;
-	var height = 500;
+		var socket = io();
+		var url = window.location.href.split('/')
+		var roomId = url[url.length-2];
+		var selfReady = false;
+		var oppReady = false;
+		socket.emit('register',roomId);
+		
+		var arrShip = [];
+		var width = 800;
+		var height = 420;
+		var tween = null;
+		var shipsSize = [2,3,3,4,5];
+		var dirArr = ["N","E","S","W"];
+		
+		var mapStatus = [];
+		
+		for(var i = 0;i < 10;i++){
+			mapStatus[i] = [];
+			for(var j = 0;j < 10;j++){
+				mapStatus[i][j] = 0;
+			}
+		}
 
-	var stage = new Konva.Stage({
-	  container: 'container',
-	  width: width,
-	  height: height
-	});
+		var stage = new Konva.Stage({
+		  container: 'container',
+		  width: width,
+		  height: height
+		});
 
-	var layer1 = new Konva.Layer();
-	var layer2 = new Konva.Layer();
-	var mapX = 300;
-	var mapY = 0;
-
-	function drawMap(mx,my){
-		for(var i=0;i <= 400;i+=40){
-			var vLine = new Konva.Line({
-			  points: [5, 5, 5, 405],
-			  stroke: 'black',
-			  strokeWidth: 5,
-			  lineCap: 'round',
-			  lineJoin: 'round'
-			});
-
-			vLine.move({
-			  x : i + mx,
-			  y : 5 + my
-			});
-
-			layer1.add(vLine);
+		var layer1 = new Konva.Layer();
+		var layer2 = new Konva.Layer();
+		var layer3 = new Konva.Layer();
+		var mapX = 0;
+		var mapY = 0;
+		var paddingTop = 10;
+		var shipBlockSize = 38;
+		
+		function addShip(x,y,block,direction){
+			var id = 0;
+			if(arrShip.length > 0){
+				id = arrShip[arrShip.length - 1].id + 1;
+			}
+			arrShip.push({id:id,x:x,y:y,block:block,direction:direction});
+			for(var i = 0;i < block;i++){
+				if(direction == "N" || direction == "S"){
+					mapStatus[x][y + i] = 1;
+				}else if(direction == "E" || direction == "W"){
+					mapStatus[x + i][y] = 1;
+				}
+			}
+			
+			return id;
 		}
 		
-		for(var i=0;i <= 400;i+=40){
-			var hLine = new Konva.Line({
-			  points: [5, 5, 405, 5],
-			  stroke: 'black',
-			  strokeWidth: 5,
-			  lineCap: 'round',
-			  lineJoin: 'round'
-			});
-
-			hLine.move({
-			  x : 0 + mx,
-			  y : i + 5 + my
-			});
-
-			layer1.add(hLine);
+		function changeShip(id,x,y,block,direction){
+			var idx = -1;
+			for(var i = 0;i < arrShip.length;i++){
+				if(arrShip[i].id == id){
+					idx = i;
+					break;
+				}
+			}
+			
+			var dir = arrShip[idx].direction;
+			var blk = arrShip[idx].block;
+			var _x = arrShip[idx].x;
+			var _y = arrShip[idx].y;
+			console.log('id ' + id + ' x ' + _x);
+			
+			for(var j = 0;j < blk;j++){
+				if(dir == "N" || dir == "S"){
+					mapStatus[_x][_y + j] = 0;
+				}else if(dir == "E" || dir == "W"){
+					mapStatus[_x + j][_y] = 0;
+				}
+			}
+			
+			arrShip[idx].x = x;
+			arrShip[idx].y = y;
+			arrShip[idx].block = block;
+			arrShip[idx].direction = direction;
+			
+			for(var j = 0;j < block;j++){
+				if(direction == "N" || direction == "S"){
+					mapStatus[x][y + j] = 1;
+				}else if(direction == "E" || direction == "W"){
+					mapStatus[x + j][y] = 1;
+				}
+			}
 		}
-	}
-	
-	function drawShip(sx,sy,block,direction){
-		var blockH = block;
-		var blockW = 1;
-		if(direction=="E" || direction=="W"){
-			blockH = 1;
-			blockW = block;
+
+		function drawMap(mx,my){
+			var bgImg = new Image();
+			bgImg.onload = function(){
+				var img = new Konva.Image({
+					x : mapX + 5,
+					y : mapY + 10,
+					image : bgImg,
+					width : 400,
+					height : 400,
+					opacity : 0.8
+				});
+				
+				layer3.add(img);
+				stage.add(layer3);
+				layer3.moveDown().moveDown();;
+			}
+			
+			bgImg.src = "/images/sea.jpg";
+		
+			for(var i=0;i <= 400;i+=40){
+				var vLine = new Konva.Line({
+				  points: [5, 5, 5, 405],
+				  stroke: 'white',
+				  strokeWidth: 5,
+				  lineCap: 'round',
+				  lineJoin: 'round'
+				});
+
+				vLine.move({
+				  x : i + mx,
+				  y : 5 + my
+				});
+
+				layer1.add(vLine);
+			}
+			
+			for(var i=0;i <= 400;i+=40){
+				var hLine = new Konva.Line({
+				  points: [5, 5, 405, 5],
+				  stroke: 'white',
+				  strokeWidth: 5,
+				  lineCap: 'round',
+				  lineJoin: 'round'
+				});
+
+				hLine.move({
+				  x : 0 + mx,
+				  y : i + 5 + my
+				});
+
+				layer1.add(hLine);
+			}
 		}
-		var h = 35*blockH, w = 35*blockW;
-		var imgPath = 'ship' + direction + '.png';
-	
-		var shipImg = new Image();
-		shipImg.onload = function(){
-			var img = new Konva.Image({
-				x : mapX + 7 + sx*40,
-				y : mapY + 20 + sy*40,
-				image : shipImg,
-				width : w,
-				height : h,
-				draggable : true,
-				dragBoundFunc: function(pos) {
-					var newX = pos.x;
-					var newY = pos.y;
-					if(pos.x < mapX + 7){
+		
+		function drawShip(sx,sy,block,direction,lastId){
+			var blockH = block;
+			var blockW = 1;
+			var id = lastId;
+			if(direction=="E" || direction=="W"){
+				blockH = 1;
+				blockW = block;
+			}
+			var h = shipBlockSize*blockH, w = shipBlockSize*blockW;
+			var imgPath = 'ship' + direction + '.png';
+		
+			var shipImg = new Image();
+			shipImg.onload = function(){
+				var img = new Konva.Image({
+					x : mapX + 7 + sx*40,
+					y : mapY + paddingTop + sy*40,
+					image : shipImg,
+					width : w,
+					height : h,
+					draggable : true,
+					dragBoundFunc: function(pos) {
+						var newX = pos.x;
+						var newY = pos.y;
+						if(pos.x < mapX + 7){
+							newX = mapX + 7;
+						}
+						if(pos.x > mapX + 368 - shipBlockSize*(blockW-1)){
+							newX = mapX + 368 - shipBlockSize*(blockW-1);
+						}
+						if(pos.y < mapY + paddingTop){
+							newY = mapY + paddingTop;
+						}
+						if(pos.y > mapY + 368 - shipBlockSize*(blockH-1)){
+							newY = mapY + 368 - shipBlockSize*(blockH-1);
+						}
+						
+						var nearest = 1000;
+						var nearest_x = newX;
+						var nearest_y = newY;
+						var nearestGridX = sx;
+						var nearestGridY = sy;
+						
+						for(var nx = 0;nx < 10;nx++){
+							for(var ny = 0;ny < 10;ny++){
+							var distance = Math.sqrt(Math.pow(newX - (mapX + 7 + nx*40),2) + Math.pow(newY - (mapY + paddingTop + ny*40),2));
+								if(distance < nearest){
+									nearest = distance;
+									nearest_x = mapX + 7 + nx*40;
+									nearest_y = mapY + paddingTop + ny*40;
+									nearestGridX = nx;
+									nearestGridY = ny;
+								}
+							}
+						}
+						
+						newX = nearest_x;
+						newY = nearest_y;
+						
+						for(var k = 0;k < block;k++){
+							var thisX = sx;
+							var thisY = sy;
+							if(direction == "W" || direction == "E"){thisX += k}
+							if(direction == "N" || direction == "S"){thisY += k}
+							
+							mapStatus[thisX][thisY] = 0;
+						}
+						
+						for(var k = 0;k < block;k++){
+							var thisX = nearestGridX;
+							var thisY = nearestGridY;
+							if(direction == "W" || direction == "E"){thisX += k}
+							if(direction == "N" || direction == "S"){thisY += k}
+							
+							
+							if(overlap(id,thisX,thisY,block)){
+								console.log('overlap at ' + thisX + ' ' + thisY);
+								return {
+									x : mapX + 7 + sx*40,
+									y : mapY + paddingTop + sy*40,
+								};
+							}
+						}
+						
+						changeShip(id,nearestGridX,nearestGridY,block,direction);
+						
+						return {
+							x: newX,
+							y: newY
+						};
+					}
+				});
+				
+				img.on('fix',function(){
+					var oldX = img.getX();
+					var oldY = img.getY();
+					var newX = img.getX();
+					var newY = img.getY();
+					if(oldX < mapX + 7){
 						newX = mapX + 7;
 					}
-					if(pos.x > mapX + 368 - 35*(blockW-1)){
-						newX = mapX + 368 - 35*(blockW-1);
+					if(oldX > mapX + 368 - shipBlockSize*(blockW-1)){
+						newX = mapX + 368 - shipBlockSize*(blockW-1);
 					}
-					if(pos.y < mapY + 20){
-						newY = mapY + 20;
+					if(oldY < mapY + paddingTop){
+						newY = mapY + paddingTop;
 					}
-					if(pos.y > mapY + 368 - 35*(blockH-1)){
-						newY = mapY + 368 - 35*(blockH-1);
+					if(oldY > mapY + 368 - shipBlockSize*(blockH-1)){
+						newY = mapY + 368 - shipBlockSize*(blockH-1);
 					}
-					return {
-						x: newX,
-						y: newY
-					};
-				}
-			});
+					
+					var nearest = 1000;
+					var nearest_x = newX;
+					var nearest_y = newY;
+					var nearestGridX = 0;
+					var nearestGridY = 0;
+					
+					for(var nx = 0;nx < 10;nx++){
+						for(var ny = 0;ny < 10;ny++){
+						var distance = Math.sqrt(Math.pow(newX - (mapX + 7 + nx*40),2) + Math.pow(newY - (mapY + paddingTop + ny*40),2));
+							if(distance < nearest){
+								nearest = distance;
+								nearest_x = mapX + 7 + nx*40;
+								nearest_y = mapY + paddingTop + ny*40;
+								nearestGridX = nx;
+								nearestGridY = ny;
+							}
+						}
+					}
+					
+					newX = nearest_x;
+					newY = nearest_y;
+					
+					changeShip(id,nearestGridX,nearestGridY,block,direction);
+					
+					img.position({
+						x : newX,
+						y : newY
+					});
+					layer2.batchDraw();
+				});
+				
+				img.on('mouseover', function() {
+					document.body.style.cursor = 'pointer';
+				});
+				
+				img.on('mouseout', function() {
+					document.body.style.cursor = 'default';
+				});
+				
+				img.on('dragstart',function(){
+					
+				});
+				
+				img.on('dragmove',function(){
+					sx = (img.getX() - 7 -mapX)/40;
+					sy = (img.getY() - paddingTop - mapY)/40;
+				});
+				
+				img.on('dragend',function(){
+					for(var h = 0;h < 10;h++){
+						var str = '';
+						for(var m = 0;m < 10;m++){
+							str += mapStatus[m][h] + ' ';
+						}
+						console.log(str);
+					}
+				});
+				
+				img.on('dblclick',function(){
+					//alert('rotate');
+					var dir = "";
+					var gridX = (img.getX() - 7 -mapX)/40,gridY = (img.getY() - paddingTop - mapY)/40;
+					
+					for(var k = 0;k < block;k++){
+						var thisX = sx;
+						var thisY = sy;
+						if(direction == "W" || direction == "E"){thisX += k}
+						if(direction == "N" || direction == "S"){thisY += k}
+						
+						mapStatus[thisX][thisY] = 0;
+					}
+					
+					if(direction=="N"){dir = "E";}
+					if(direction=="E"){dir = "S";}
+					if(direction=="S"){dir = "W";}
+					if(direction=="W"){dir = "N";}
+					
+					for(var k = 0;k < block;k++){
+						var thisX = gridX;
+						var thisY = gridY;
+						if(dir == "W" || dir == "E"){thisX += k}
+						if(dir == "N" || dir == "S"){thisY += k}
+						
+						if(overlap(id,thisX,thisY,block)){
+							console.log('overlap');
+							return;
+						}
+					}
+					
+					drawShip(gridX,gridY,block,dir,id);
+
+					img.destroy();
+					shipImg.destroy();
+				});
+				
+				layer2.add(img);
+				stage.add(layer2);
+				img.fire('fix');
+			}
 			
-			img.on('mouseover', function() {
-				document.body.style.cursor = 'pointer';
-			});
-			
-			img.on('mouseout', function() {
-				document.body.style.cursor = 'default';
-			});
-			layer2.add(img);
-			stage.add(layer2);
+			shipImg.src = "/images/" + imgPath;
+
+			if(lastId == -1){
+				id = addShip(sx,sy,block,direction);
+			}
+			//console.log(arrShip);
+		}
+
+		rand();
+		drawMap(mapX,mapY);
+		stage.add(layer1);
+		
+		function overlap(id,x,y,block){
+			var overlap = false;
+			if(x > 9 || y > 9){
+				return false;
+			}
+			overlap = (mapStatus[x][y] == 1);
+				
+			if(overlap){
+				return true;
+			}
+			return false;
 		}
 		
-		shipImg.src = "/images/" + imgPath;
-	}
+		function rand(){
+			layer2.destroy();
+			arrShip = [];
+			for(var i = 0;i < 10;i++){
+				for(var j = 0;j < 10;j++){
+					mapStatus[i][j] = 0;
+				}
+			}
+			for(var i = 0;i < shipsSize.length;i++){
+				var block = shipsSize[i];
+				var randX, randY;
+				var over;
+				do{
+					over = false;
+					randX = Math.floor((Math.random() * 10)); 
+					randY = Math.floor((Math.random() * 10)); 
+					var randDirection = dirArr[Math.floor(Math.random() * 4)];
 
-	drawShip(0,0,3,"E");
-	drawShip(1,5,5,"N");
-	drawMap(mapX,mapY);
-	stage.add(layer1);
+					for(var k = 0;k < block;k++){
+							var thisX = randX;
+							var thisY = randY;
+							if(randDirection == "W" || randDirection == "E"){thisX += k}
+							if(randDirection == "N" || randDirection == "S"){thisY += k}
+							if(thisX >= 10 || thisY >= 10 || overlap(i,thisX,thisY,block)){
+								over = true;
+								break;
+							}
+						}
+				}while(over);
+					
+				drawShip(randX,randY,block,randDirection,-1);
+			}
+		}
+		
+		$('#random').click(function(){
+			$('#random').prop('disabled',true);
+			rand();
+		});
+		
+		$('#ready').click(function(){
+			socket.emit('ready');
+			selfReady = true;
+			$('#ready').prop( "disabled", true );
+			$('#ready').text("Waiting For The Opponent To Be Ready...");
+		});
+		
+		socket.on('playerConnected',function(){
+			$('#ready').prop( "disabled", false );
+			$('#ready').text("Ready To Move On!");
+			$('#oppDetails').text("Opponent entered. Opponent is placing ships...");
+		});
+		
+		socket.on('playerDisconnected',function(){
+			$('#oppDetails').text("No opponent");
+			$('#ready').prop( "disabled", true );
+			$('#ready').text("Wait For Another Player....");
+		});
+		
+		socket.on('ready',function(){
+			oppReady = true;
+			$('#oppDetails').text("Opponent is ready!");
+			if(selfReady && oppReady){
+				socket.emit('ready');
+				setCookie('ships',JSON.stringify(arrShip),1);
+				var host = window.location.href.split('/')[0];
+				location.href = host + '/' + roomId + '/battle/';
+			}
+		});
 	</script>
 </body>
 </html>

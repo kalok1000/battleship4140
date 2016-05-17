@@ -31,10 +31,6 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.get("/ship/",function(req,res,next){
-	res.sendFile(path.resolve(__dirname + '/views/ship_arrange.html'));
-});
-
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
@@ -45,6 +41,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
+
+app.get("/:id([0-9]+)/ship/",function(req,res,next){
+	 if(!req.cookies.roomId){
+		 res.cookie('roomId', req.params.id, {maxAge: 60 * 1000});
+	 }
+	res.sendFile(path.resolve(__dirname + '/views/ship_arrange.html'));
+});
+
+app.get("/:id([0-9]+)/battle/",function(req,res,next){
+	res.sendFile(path.resolve(__dirname + '/views/battle.html'));
+});
 
 app.get('/',function(request,response){
     response.sendFile(__dirname+'/views/index.html');

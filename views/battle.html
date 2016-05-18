@@ -35,7 +35,8 @@
 					<div class="row" align="center"><h4><span id="coolDown">Attack Now!</span></h4></div>
 					<div class="row" align="center"><img id="signal" src="/images/green.gif" width="40%"/></div>
 				</div>
-				<div id="container2" align="center" class="col-md-3"></div>
+				<div id="container2" align="center" class="col-md-7"></div>
+				<div align="center" class="col-md-7"></div>
 			</div>
 		</div>
 	</div>
@@ -192,6 +193,30 @@
 			});
 			stage.draw();
 			stage.setHeight(height*sRatio);
+		}	
+		
+		function scaleOppStage(ratio){
+			oppLayer2.scale({
+				x:ratio,
+				y:ratio
+			});
+			oppLayer2.draw();
+			oppLayer1.scale({
+				x:ratio,
+				y:ratio
+			});
+			oppLayer1.draw();
+			oppLayer3.scale({
+				x:ratio,
+				y:ratio
+			});
+			oppLayer3.draw();
+			oppStage.scale({
+				x:ratio,
+				y:ratio
+			});
+			oppStage.draw();
+			oppStage.setHeight(oppHeight*sRatio);
 		}	
 		
 		function miss(x,y,attack){
@@ -425,11 +450,13 @@
 		});
 		
 		window.onload = function(event){
-			
+			sRatio = $(window).width()/$(document).width();
+			scaleOppStage(sRatio);
 		}
 		
 		window.onresize = function(event){
-			
+			sRatio = $(window).width()/$(document).width();
+			scaleOppStage(sRatio);
 		}
 	</script>
 </body>

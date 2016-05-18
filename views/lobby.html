@@ -81,7 +81,7 @@
         var num = 0;
         for(var i = 0;i < data.length;i++){
           var roomId = data[i].roomId;
-          $('#rooms').append("<div class='panel-body' style='background:rgba(30%,50%,0%,0.6) '><a href='/" + roomId + "/ship/' target='_blank'>Room " + roomId + "</div></div>");
+          $('#rooms').append("<div class='panel-body' style='background:rgba(30%,50%,0%,0.6) '><a href='/" + roomId + "/ship/'>Room " + roomId + "</div></div>");
           num++;
         }
         if(num < 1){

@@ -174,8 +174,8 @@ app.get('/test', function(request, response){
 var Schema = new mongoose.Schema({
     username : {type: String, unique: true},
     password : String,
-    password2: String,
-    email: String
+    email: String,
+    online : Number
 });
 
 var user = mongoose.model('user-data',Schema);
@@ -190,46 +190,122 @@ app.post('/try', function(req, res) {
           if(!obj){
               //console.log("Incorrect username or password");
               // res.redirect('/');
+              db.close();
               res.status(404);
               res.json({error: "Incorrect username or password"});
           }
           else {
               //res.redirect('lobby');
+              assert.equal(null,err);
+              db.collection('user-data').update({username : username},{
+                username : username,
+                password : password,
+                email : obj.email,
+                online : 1
+              });
+              db.close();
               res.json(obj);
           }
         });
     });
 });
 
+var onlineppl = [];
+var onlineRooms = [];
+
+var fin = function(db, callback) {
+   var i = 0;
+   var cursor =db.collection('user-data').find({online:1});
+   cursor.each(function(err, doc) {
+      assert.equal(err, null);
+      if (doc != null) {
+         onlineppl[i] = doc;
+         //console.log("i = " + i + onlineppl[i]);
+         i = i + 1;
+      } else {
+         callback();
+      }
+   });
+};
+
+var getRooms = function(db, callback) {
+   var i = 0;
+   var cursor =db.collection('room-data').find({players:1});
+   cursor.each(function(err, doc) {
+      assert.equal(err, null);
+      if (doc != null) {
+         onlineRooms[i] = doc;
+         //console.log("i = " + i + onlineppl[i]);
+         i = i + 1;
+      } else {
+         callback();
+      }
+   });
+};
+
+app.get('/online', function(req, res) {
+    //onlineppl = null;
+    mongo.connect(uristring, function(err,db) {
+        assert.equal(null, err);
+        fin(db, function() {
+          res.json(onlineppl);
+          //console.log(onlineppl[0]);
+          db.close();
+        });
+    });
+});
+
+app.get('/rooms', function(req, res) {
+    //onlineRooms = null;
+    mongo.connect(uristring, function(err,db) {
+        assert.equal(null, err);
+        getRooms(db, function() {
+          res.json(onlineRooms);
+          //console.log(onlineppl[0]);
+          db.close();
+        });
+    });
+});
+
 app.post('/new', function(req,res, next){
-    /*new user({
-        _id : req.body.username,
-        password : req.body.password,
-        password2 : req.body.password2,
-        email : req.body.email
-    }).save(function(err,doc) {
-        if(err)  res.json(err);
-        else { 
-          res.redirect("/");
-        }
-    });*/
     var user = {
         username : req.body.username,
         password : req.body.password,
-        password2 : req.body.password2,
-        email : req.body.email
+        email : req.body.email,
+        online : 0
     };
+    var username = req.body.username;
+    //res.json(user);
 
     mongo.connect(uristring, function(err,db) {
         assert.equal(null, err);
-        db.collection('user-data').insertOne(user, function(err, result) {
-            assert.equal(null, err);
-            console.log("User inserted");
-            db.close();
+        db.collection('user-data').findOne({username: username}, function(err, obj) {
+            if(!obj) {
+              db.collection('user-data').insertOne(user, function(err, result) {
+                  assert.equal(null, err);
+                  db.close();
+                  res.redirect('/');
+              });
+            } else {
+              db.close();
+              res.status(404);
+              res.json({error: "Username has been used"});
+            }
         });
     });
+});
 
-    res.redirect('/');
+app.post('/logout', function(req, res, next) {
+  mongo.connect(uristring, function(err,db) {
+    assert.equal(null, err);
+    db.collection('user-data').update({username : username},{
+      username : username,
+      password : password,
+      email : obj.email,
+      online : 0
+    });
+  });
+  res.redirect('/');
 });
 
 // app.post('/new', function(req,res){

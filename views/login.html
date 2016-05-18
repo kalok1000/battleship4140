@@ -208,7 +208,8 @@
                              success: function(data)
                              {
                                 Cookies.set('user', data);
-                                window.location.href = '/lobby';
+                                alert("successful login");
+                                window.location.href = '/';
                              },
                              error: function(XMLHttpRequest, textStatus, errorThrown) { 
                                   //alert("Status: " + textStatus); 
@@ -219,7 +220,6 @@
 
                       e.preventDefault(); // avoid to execute the actual submit of the form.
                   });
-
                 </script>
         		</div>
           </div>

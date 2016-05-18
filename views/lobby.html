@@ -13,7 +13,7 @@
   <!-- Latest compiled JavaScript -->
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
-  <!--<style>
+  <style>
       body {
       background: url("/images/background2.jpg") no-repeat center center fixed;
       -webkit-background-size: cover;
@@ -22,20 +22,74 @@
       background-size: cover;
       font-family: 'Exo', sans-serif;
       }
-  </style>-->
+  </style>
 </head>
 
 <body>
   <h1> Lobby </h1>
+  <div class="row">
+
+  </div>
+  <div class="row">
+    <a href="create" class="btn btn-default">Create Room</a>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-success" style="background-color:transparent;padding:5px">
+        <div class="panel-header"><h2>Rooms</h2></div>
+        <div class="panel-body" style="font-size:20px">
+          <div id="rooms">
+            Retrieving room data...
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <div class="panel panel-success" style="background-color:transparent;padding:5px">
+        <div class="panel-header"><h2>Player Online</h2></div>
+        <div class="panel-body" style="font-size:20px">
+          <div id="lobby">
+            Retrieving user data...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <script type="text/javascript">
-    setInterval(function()
-    {
-        $.post("/online",function(data){
-          console.log('result' + data);
-        });
-    }, 1000); // This will "refresh" every 1 second
-  </script>
-  <a href="boardsetting" class="btn btn-default">Enter random room</a>
+  setInterval(function()
+  {
+      $.get("/online",function(data){
+        $("#lobby").html("");
+        var num = 0;
+        for(var i = 0;i < data.length;i++){
+          var username = data[i].username;
+          if(username != Cookies.get('user')){
+            $('#lobby').append("<div class='panel-body' style='background:rgba(30%,50%,0%,0.6) '>" + username + "</div>");
+            num++;
+          }
+        }
+        if(num < 1){
+          $('#lobby').html("No user is currently online");
+        }
+      });
+  }, 1000); // This will "refresh" every 1 second
+
+  setInterval(function()
+  {
+      $.get("/rooms",function(data){
+        $("#rooms").html("");
+        var num = 0;
+        for(var i = 0;i < data.length;i++){
+          var roomId = data[i].roomId;
+          $('#rooms').append("<div class='panel-body' style='background:rgba(30%,50%,0%,0.6) '><a href='/" + roomId + "/ship/' target='_blank'>Room " + roomId + "</div></div>");
+          num++;
+        }
+        if(num < 1){
+          $('#rooms').html("No user is currently online");
+        }
+      });
+  }, 1000); // This will "refresh" every 1 second
+</script>
   <!--<script type="text/javascript">
   	var currentUser = Cookies.getJSON('user');
   </script>-->

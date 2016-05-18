@@ -161,15 +161,6 @@ app.get('/register',function(request,response){
 app.get('/lobby',function(request,response){
     response.sendFile(__dirname+'/views/lobby.html');
 });
-app.get('/boardsetting',function(request,response){
-    response.sendFile(__dirname+'/views/boardsetting.html');
-});
-app.get('/battleship',function(request,response){
-    response.sendFile(__dirname+'/views/battleship.html');
-});
-app.get('/test', function(request, response){
-    response.sendFile(__dirname+'/views/test.html');
-});
 
 var Schema = new mongoose.Schema({
     username : {type: String, unique: true},
@@ -244,7 +235,7 @@ var getRooms = function(db, callback) {
 };
 
 app.get('/online', function(req, res) {
-    //onlineppl = null;
+    onlineppl = [];
     mongo.connect(uristring, function(err,db) {
         assert.equal(null, err);
         fin(db, function() {
@@ -256,7 +247,7 @@ app.get('/online', function(req, res) {
 });
 
 app.get('/rooms', function(req, res) {
-    //onlineRooms = null;
+    onlineRooms = [];
     mongo.connect(uristring, function(err,db) {
         assert.equal(null, err);
         getRooms(db, function() {

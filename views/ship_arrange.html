@@ -2,6 +2,7 @@
 <html>
 
 <head>
+	<title>BattleShip</title>
 	<link rel="stylesheet" href="/stylesheets/style.css" />
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
@@ -11,21 +12,70 @@
 	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 	<script src="/javascripts/js.cookie.js"></script>
 	<script src="/javascripts/konva.min.js"></script>
+	<script src="/javascripts/notify.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<!-- JavaScript -->
+	<script src="//cdn.jsdelivr.net/alertifyjs/1.6.1/alertify.min.js"></script>
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/alertify.min.css"/>
+	<!-- Default theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/default.min.css"/>
+	<!-- Semantic UI theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/semantic.min.css"/>
+	<!-- Bootstrap theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/bootstrap.min.css"/>
+
+	<!-- 
+		RTL version
+	-->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/alertify.rtl.min.css"/>
+	<!-- Default theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/default.rtl.min.css"/>
+	<!-- Semantic UI theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/semantic.rtl.min.css"/>
+	<!-- Bootstrap theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/bootstrap.rtl.min.css"/>
+	<style>
+		body {
+			background-image: url("/images/background2.jpg");
+		}
+		.text
+		{
+		font-weight:bold;text-transform:uppercase;color:#000000;font-size:20px;text-align:center;font-family:arial black, sans-serif;line-height:3;
+		}
+		button {
+			width:300px
+		}
+	</style>
 </head>
 <body>
-	<embed loop="true" src="/music/waiting.mp3" hidden="true" type="audio/midi"></embed>
+	<audio autoplay loop>
+		<source src="/music/waiting.mp3" type="audio/mpeg">
+		Your browser does not support the audio element.
+	</audio>
 	<div class="row">
-		<div class="panel panel-danger">
-			<div class="panel-heading">Place Your Ships</div>
+		<div class="panel panel-danger" style="background-color: transparent;">
 			<div class="panel-body">
-				<div class="col-md-2"></div>
-				<div class="col-md-4" id="container" align="center"></div>
-				<div class="col-md-6" align="center">
-					<div class="row"><button id="random" class="btn btn-primary btn-lg">Random Generate</button></div>
-					<div class="row"><br/></div>
-					<div class="row"><button id="ready" disabled="disabled" class="btn btn-danger btn-lg">Wait For Another Player...</button><br/><br/></div>
-					<div class="row" id="oppDetails">No opponent</div>
+				<div class="row" align="center"><img src="/images/logo.gif" width="20%"/></div>
+				<div class="row">
+					<div class="col-md-2"></div>
+					<div class="col-md-4" id="container" align="center"></div>
+					<div class="col-md-6" align="center">
+						<div class="row">
+							<button id="random" class="btn btn-primary btn-lg">Random Placing</button><br/><br/>
+						</div>
+						<div class="row">
+							<button id="ready" disabled="disabled" class="btn btn-danger btn-lg">Wait For Another Player...</button><br/><br/>
+						</div>
+						<div class="row">
+							<button id="export" class="btn btn-success btn-lg">Export Placing</button><br/><br/>
+						</div>
+						<div class="row">
+							<button id="import" class="btn btn-warning btn-lg">Import Placing</button>
+						</div>
+						<div class="row"><h4><span id="oppDetails" class="text"></span></h4></div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -56,7 +106,7 @@
 				mapStatus[i][j] = 0;
 			}
 		}
-
+		
 		var stage = new Konva.Stage({
 		  container: 'container',
 		  width: width,
@@ -351,7 +401,7 @@
 					}
 				});
 				
-				img.on('dblclick',function(){
+				img.on('dblclick dbltap',function(){
 					//alert('rotate');
 					var dir = "";
 					var gridX = (img.getX() - 7 -mapX)/40,gridY = (img.getY() - paddingTop - mapY)/40;
@@ -485,6 +535,45 @@
 			rand();
 		});
 		
+		$('#export').click(function(){
+			var result = JSON.stringify(arrShip);
+			alertify.prompt("Exported current placing as string.", result,
+			  function(evt, value){
+				
+			  },
+			  function(){
+
+			}).setHeader("");
+		});
+		
+		$('#import').click(function(){
+			var data;
+			alertify.prompt("Place the string representing the placing below.", "",
+			  function(evt, value){
+				data = value;
+				var ships = JSON.parse(data);
+				layer2.destroy();
+				arrShip = [];
+				for(var i = 0;i < 10;i++){
+					for(var j = 0;j < 10;j++){
+						mapStatus[i][j] = 0;
+					}
+				}
+				
+				for(var i = 0;i < ships.length;i++){
+					var block = ships[i].block;
+					var x = ships[i].x;
+					var y = ships[i].y;
+					var direction = ships[i].direction;
+					
+					drawShip(x,y,block,direction,-1);
+				}
+			  },
+			  function(){
+
+			}).setHeader("");
+		});
+		
 		$('#ready').click(function(){
 			socket.emit('ready');
 			selfReady = true;
@@ -498,12 +587,17 @@
 			$('#ready').prop( "disabled", false );
 			$('#random').prop("disabled", false);
 			$('#ready').text("Ready To Move On!");
-			$('#oppDetails').html("Opponent entered. <br/>Opponent is placing ships...");
+			$('#oppDetails').html("Opponent is placing ships...");
+		});
+		
+		socket.on('notifyPlayerConnect',function(){
+			$.notify("A player entered this game session.","info");
 		});
 		
 		socket.on('playerDisconnected',function(){
-			$('#oppDetails').text("No opponent");
+			$('#oppDetails').text("");
 			$('#ready').prop( "disabled", true );
+			$.notify("Opponent left this game session.","warn");
 			$('#ready').text("Wait For Another Player....");
 			stage.listening(true);
 			$('#random').prop("disabled", false);

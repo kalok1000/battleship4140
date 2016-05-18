@@ -2,6 +2,7 @@
 <html>
 
 <head>
+	<title>BattleShip</title>
 	<link rel="stylesheet" href="/stylesheets/style.css" />
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
@@ -12,19 +13,58 @@
 	<script src="/javascripts/js.cookie.js"></script>
 	<script src="/javascripts/konva.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<script src="/javascripts/alertify.js"></script>
+	<!-- JavaScript -->
+	<script src="//cdn.jsdelivr.net/alertifyjs/1.6.1/alertify.min.js"></script>
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/alertify.min.css"/>
+	<!-- Default theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/default.min.css"/>
+	<!-- Semantic UI theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/semantic.min.css"/>
+	<!-- Bootstrap theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/bootstrap.min.css"/>
+
+	<!-- 
+		RTL version
+	-->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/alertify.rtl.min.css"/>
+	<!-- Default theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/default.rtl.min.css"/>
+	<!-- Semantic UI theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/semantic.rtl.min.css"/>
+	<!-- Bootstrap theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/bootstrap.rtl.min.css"/>
+	<style>
+		body {
+			background-image: url("/images/background.jpg");
+		}
+		.text
+		{
+		font-weight:bold;text-transform:uppercase;color:#000000;font-size:20px;text-align:center;font-family:arial black, sans-serif;	
+		}
+	</style>
 </head>
 <body>
-	<embed loop="true" src="/music/battle.mp3" hidden="true" type="audio/midi"></embed>
-	<div class="panel panel-danger">
-		<div class="panel-heading">BATTLE</div>
+	<audio autoplay loop>
+		<source src="/music/battle.mp3" type="audio/mpeg">
+		Your browser does not support the audio element.
+	</audio>
+	<div class="panel panel-danger" style="background: none;">
 		<div class="panel-body">
-			<div class="col-md-3">
-				<div class="row">Your Placing</div>
-				<div id="container" align="center" class="row"></div>
-				<div class="row" align="center"><h4>Your Ships Down : <span id="yourShipsDown">0</span>/5</h4></div>
-				<div class="row"" align="center"><h4>Opponent's Ships Down : <span id="oppShipsDown">0</span>/5</h4></div>
+			<div class="row" align="center"><img src="/images/logo.gif" width="20%"/></div>
+			<div class="row">
+				<div class="col-md-5">
+					<div class="row" align="center"><span class="text">Your Placing</span></div>
+					<div id="container" align="center" class="row" style="margin-left:20px"></div>
+					<div class="row" align="center"><span class="text">Your Ships Remain : <span id="yourShipsDown">5</span>/5</span></div>
+					<div class="row" align="center"><span id="coolDown" class="text">Attack Now(3 sec left)!</span></div>
+					<div class="row" align="center"><img id="signal" src="/images/green.gif" width="40%"/></div>
+				</div>
+				<div id="container2" align="center" class="col-md-7"></div>
+				<div align="center" class="col-md-7"></div>
 			</div>
-			<div id="container2" align="center" class="col-md-6"></div>
 		</div>
 	</div>
 	<script>
@@ -39,6 +79,15 @@
 			arrShip[z].hit = 0;
 		}
 		
+		var mapStatus = [];
+		
+		for(var i = 0;i < 10;i++){
+			mapStatus[i] = [];
+			for(var j = 0;j < 10;j++){
+				mapStatus[i][j] = 0;
+			}
+		}
+		
 		var oppShips;
 		var width = 252;
 		var height = 252;
@@ -47,6 +96,12 @@
 		var sRatio = 1;
 		var yourShipsDown = 0;
 		var oppShipsDown = 0;
+		var gameOver = false;
+		var coolDown = 0;
+		var stop = new sound('/sounds/stop.wav');
+		var go = new sound('/sounds/go.wav');
+		var timeLeft = 3;
+		var countTime = true;
 		
 		var stage = new Konva.Stage({
 		  container: 'container',
@@ -94,7 +149,7 @@
 			for(var i=0;i <= 400;i+=40){
 				var vLine = new Konva.Line({
 				  points: [5, 5, 5, 405],
-				  stroke: 'white',
+				  stroke: '#996633',
 				  strokeWidth: 5,
 				  lineCap: 'round',
 				  lineJoin: 'round'
@@ -111,7 +166,7 @@
 			for(var i=0;i <= 400;i+=40){
 				var hLine = new Konva.Line({
 				  points: [5, 5, 405, 5],
-				  stroke: 'white',
+				  stroke: '#996633',
 				  strokeWidth: 5,
 				  lineCap: 'round',
 				  lineJoin: 'round'
@@ -178,6 +233,30 @@
 			stage.setHeight(height*sRatio);
 		}	
 		
+		function scaleOppStage(ratio){
+			oppLayer2.scale({
+				x:ratio,
+				y:ratio
+			});
+			oppLayer2.draw();
+			oppLayer1.scale({
+				x:ratio,
+				y:ratio
+			});
+			oppLayer1.draw();
+			oppLayer3.scale({
+				x:ratio,
+				y:ratio
+			});
+			oppLayer3.draw();
+			oppStage.scale({
+				x:ratio,
+				y:ratio
+			});
+			oppStage.draw();
+			oppStage.setHeight(oppHeight*sRatio);
+		}	
+		
 		function miss(x,y,attack){
 			var missImg = new Image();
 			missImg.onload = function(){
@@ -237,7 +316,7 @@
 					arrShip[i].hit += 1;
 					if(arrShip[i].hit == arrShip[i].block){
 						yourShipsDown += 1;
-						$('#yourShipsDown').text(yourShipsDown);
+						$('#yourShipsDown').text(5 - yourShipsDown);
 						if(yourShipsDown == 5){
 							stage.listening(false);
 							oppStage.listening(false);
@@ -298,14 +377,15 @@
 		scaleStage(0.7);
 		oppStage.add(oppLayer2);
 		
-		oppStage.on('click',function(){
+		oppStage.on('click tap',function(){
 				var mousePos = oppStage.getPointerPosition();
 				var x = mousePos.x;
 				var y = mousePos.y;
-				var nx = Math.floor((x-5)/40);
-				var ny = Math.floor((y-10)/40);
-				if(nx >= 0 && nx < 10 && ny >= 0 && ny < 10){
+				var nx = Math.floor((x-5)*sRatio/40*sRatio);
+				var ny = Math.floor((y-10)*sRatio/40*sRatio);
+				if(nx >= 0 && nx < 10 && ny >= 0 && ny < 10 && mapStatus[nx][ny] != 1){
 					socket.emit('attack',[nx,ny]);
+					mapStatus[nx][ny] = 1;
 				}
 		});
 		
@@ -314,19 +394,30 @@
 		});
 		
 		socket.on('playerDisconnected',function(){
-			alert('The opponent left!');
-			var host = window.location.href.split('/')[0];
-			location.href = host + '/' + roomId + '/ship/';
+			if(!gameOver){
+				alertify
+				  .alert("The opponent left!", function(){
+					alertify.message('OK');
+					var host = window.location.href.split('/')[0];
+					location.href = host + '/' + roomId + '/ship/';
+				 }).setHeader("");;
+			}
 		});
 		
 		socket.on('damage',function(data){
 			var x = data[0];
 			var y = data[1];
+			mapStatus[x][y] = 1;
 			var success = explode(x,y);
 			if(success){
 				socket.emit('success',[x,y,yourShipsDown]);
 				if(yourShipsDown == 5){
-					alert('You lose!');
+					countTime = false;
+					gameOver = true;
+					alertify.alert("You lose!",function(){
+						var host = window.location.href.split('/')[0];
+						location.href = host + '/' + roomId + '/ship/';
+					}).setHeader("");;
 				}
 			}else{
 				socket.emit('fail',[x,y]);	
@@ -337,11 +428,21 @@
 			var x = data[0];
 			var y = data[1];
 			hit(x,y,true);
-			$('#oppShipsDown').text(data[2]);
+			
+			oppStage.listening(true);
+			$('#coolDown').text('Keep Attacking!');
+			timeLeft += 1;
+			$('#coolDown').text('Attack Now(' + timeLeft + ' sec left)!');
+			go.play();
 			if(data[2] == 5){
-				alert('You win!');
-				stage.listening(false);
-				oppStage.listening(false);
+				gameOver = true;
+				countTime = false;
+				alertify.alert('You win!',function(){
+					stage.listening(false);
+					oppStage.listening(false);
+					var host = window.location.href.split('/')[0];
+					location.href = host + '/' + roomId + '/ship/';
+				}).setHeader("");
 			}
 		});
 		
@@ -349,22 +450,49 @@
 			var x = data[0];
 			var y = data[1];
 			miss(x,y,true);
+			
 		});
 		
-		var ptrImg = new Image();
-		ptrImg.onload = function(){
-				var img = new Konva.Image({
-					x : 7 + 0*40,
-					y : paddingTop + 0*40,
-					image : ptrImg,
-					width : shipBlockSize,
-					height : shipBlockSize
-				});
-				oppLayer2.add(img);
-				oppStage.add(oppLayer2);
+		setInterval(function(){
+			if(countTime){
+				timeLeft -= 1;
+				$('#coolDown').text('Attack Now(' + timeLeft + ' sec left)!');
+				if(timeLeft <= 0){
+					countTime = false;
+					oppStage.listening(false);
+					$('#signal').attr('src','/images/red.gif');
+					$('#coolDown').text('Cooling Down...');
+					stop.play();
+					setTimeout(function(){
+						countTime = true;
+						timeLeft = 3;
+						oppStage.listening(true);
+						$('#coolDown').text('Attack Now(3 sec left)!');
+						$('#signal').attr('src','/images/green.gif');
+						go.play();
+					},2000);
+					setTimeout(function(){
+						$('#signal').attr('src','/images/yellow.gif');
+						stop.play();
+					},1000);
+				}
 			}
+		},1000);
+		
+		//var ptrImg = new Image();
+		//ptrImg.onload = function(){
+		//		var img = new Konva.Image({
+		//			x : 7 + 0*40,
+		//			y : paddingTop + 0*40,
+		//			image : ptrImg,
+		//			width : shipBlockSize,
+		//			height : shipBlockSize
+		//		});
+		//		oppLayer2.add(img);
+		//		oppStage.add(oppLayer2);
+		//	}
 			
-		ptrImg.src = "/images/explosion.png";
+		//ptrImg.src = "/images/explosion.png";
 		
 		oppStage.on('mouseover', function() {
 			document.body.style.cursor = 'pointer';
@@ -375,10 +503,7 @@
 			var nx = Math.floor((x-5)/40);
 			var ny = Math.floor((y-10)/40);
 			if(nx >= 0 && nx < 10 && ny >= 0 && ny < 10){
-				ptrImg.position({
-					x: nx,
-					y: ny
-				});
+				
 			}
 		});
 				
@@ -387,11 +512,13 @@
 		});
 		
 		window.onload = function(event){
-			
+			sRatio = $(window).width()/$(document).width();
+			scaleOppStage(sRatio);
 		}
 		
 		window.onresize = function(event){
-			
+			sRatio = $(window).width()/$(document).width();
+			scaleOppStage(sRatio);
 		}
 	</script>
 </body>

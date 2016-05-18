@@ -106,6 +106,7 @@ io.on('connection', function(socket){
 		var playerNumber = io.sockets.adapter.rooms[roomId].length;
 		if (playerNumber == 2){
 			io.to(roomId).emit('playerConnected');
+			socket.broadcast.to(roomId).emit('notifyPlayerConnect');
 		}
 	});
 	

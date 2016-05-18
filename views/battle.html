@@ -13,9 +13,36 @@
 	<script src="/javascripts/js.cookie.js"></script>
 	<script src="/javascripts/konva.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<script src="/javascripts/alertify.js"></script>
+	<!-- JavaScript -->
+	<script src="//cdn.jsdelivr.net/alertifyjs/1.6.1/alertify.min.js"></script>
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/alertify.min.css"/>
+	<!-- Default theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/default.min.css"/>
+	<!-- Semantic UI theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/semantic.min.css"/>
+	<!-- Bootstrap theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/bootstrap.min.css"/>
+
+	<!-- 
+		RTL version
+	-->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/alertify.rtl.min.css"/>
+	<!-- Default theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/default.rtl.min.css"/>
+	<!-- Semantic UI theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/semantic.rtl.min.css"/>
+	<!-- Bootstrap theme -->
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/alertifyjs/1.6.1/css/themes/bootstrap.rtl.min.css"/>
 	<style>
 		body {
 			background-image: url("/images/background.jpg");
+		}
+		.text
+		{
+		font-weight:bold;text-transform:uppercase;color:#000000;font-size:20px;text-align:center;font-family:arial black, sans-serif;	
 		}
 	</style>
 </head>
@@ -29,10 +56,10 @@
 			<div class="row" align="center"><img src="/images/logo.gif" width="20%"/></div>
 			<div class="row">
 				<div class="col-md-5">
-					<div class="row" align="center"><h4>Your Placing</h4></div>
+					<div class="row" align="center"><span class="text">Your Placing</span></div>
 					<div id="container" align="center" class="row" style="margin-left:20px"></div>
-					<div class="row" align="center"><h4>Your Ships Down : <span id="yourShipsDown">0</span>/5</h4></div>
-					<div class="row" align="center"><h4><span id="coolDown">Attack Now!</span></h4></div>
+					<div class="row" align="center"><span class="text">Your Ships Remain : <span id="yourShipsDown">5</span>/5</span></div>
+					<div class="row" align="center"><span id="coolDown" class="text">Attack Now(3 sec left)!</span></div>
 					<div class="row" align="center"><img id="signal" src="/images/green.gif" width="40%"/></div>
 				</div>
 				<div id="container2" align="center" class="col-md-7"></div>
@@ -52,6 +79,15 @@
 			arrShip[z].hit = 0;
 		}
 		
+		var mapStatus = [];
+		
+		for(var i = 0;i < 10;i++){
+			mapStatus[i] = [];
+			for(var j = 0;j < 10;j++){
+				mapStatus[i][j] = 0;
+			}
+		}
+		
 		var oppShips;
 		var width = 252;
 		var height = 252;
@@ -64,6 +100,8 @@
 		var coolDown = 0;
 		var stop = new sound('/sounds/stop.wav');
 		var go = new sound('/sounds/go.wav');
+		var timeLeft = 3;
+		var countTime = true;
 		
 		var stage = new Konva.Stage({
 		  container: 'container',
@@ -278,7 +316,7 @@
 					arrShip[i].hit += 1;
 					if(arrShip[i].hit == arrShip[i].block){
 						yourShipsDown += 1;
-						$('#yourShipsDown').text(yourShipsDown);
+						$('#yourShipsDown').text(5 - yourShipsDown);
 						if(yourShipsDown == 5){
 							stage.listening(false);
 							oppStage.listening(false);
@@ -343,11 +381,11 @@
 				var mousePos = oppStage.getPointerPosition();
 				var x = mousePos.x;
 				var y = mousePos.y;
-				var nx = Math.floor((x-5)/40);
-				var ny = Math.floor((y-10)/40);
-				if(nx >= 0 && nx < 10 && ny >= 0 && ny < 10){
+				var nx = Math.floor((x-5)*sRatio/40*sRatio);
+				var ny = Math.floor((y-10)*sRatio/40*sRatio);
+				if(nx >= 0 && nx < 10 && ny >= 0 && ny < 10 && mapStatus[nx][ny] != 1){
 					socket.emit('attack',[nx,ny]);
-					oppStage.listening(false);
+					mapStatus[nx][ny] = 1;
 				}
 		});
 		
@@ -357,23 +395,29 @@
 		
 		socket.on('playerDisconnected',function(){
 			if(!gameOver){
-				alert('The opponent left!');
-				var host = window.location.href.split('/')[0];
-				location.href = host + '/' + roomId + '/ship/';
+				alertify
+				  .alert("The opponent left!", function(){
+					alertify.message('OK');
+					var host = window.location.href.split('/')[0];
+					location.href = host + '/' + roomId + '/ship/';
+				 }).setHeader("");;
 			}
 		});
 		
 		socket.on('damage',function(data){
 			var x = data[0];
 			var y = data[1];
+			mapStatus[x][y] = 1;
 			var success = explode(x,y);
 			if(success){
 				socket.emit('success',[x,y,yourShipsDown]);
 				if(yourShipsDown == 5){
-					alert('You lose!');
-					var host = window.location.href.split('/')[0];
-					location.href = host + '/' + roomId + '/ship/';
+					countTime = false;
 					gameOver = true;
+					alertify.alert("You lose!",function(){
+						var host = window.location.href.split('/')[0];
+						location.href = host + '/' + roomId + '/ship/';
+					}).setHeader("");;
 				}
 			}else{
 				socket.emit('fail',[x,y]);	
@@ -387,14 +431,18 @@
 			
 			oppStage.listening(true);
 			$('#coolDown').text('Keep Attacking!');
+			timeLeft += 1;
+			$('#coolDown').text('Attack Now(' + timeLeft + ' sec left)!');
 			go.play();
 			if(data[2] == 5){
-				alert('You win!');
-				stage.listening(false);
-				oppStage.listening(false);
-				var host = window.location.href.split('/')[0];
-				location.href = host + '/' + roomId + '/ship/';
 				gameOver = true;
+				countTime = false;
+				alertify.alert('You win!',function(){
+					stage.listening(false);
+					oppStage.listening(false);
+					var host = window.location.href.split('/')[0];
+					location.href = host + '/' + roomId + '/ship/';
+				}).setHeader("");
 			}
 		});
 		
@@ -402,20 +450,34 @@
 			var x = data[0];
 			var y = data[1];
 			miss(x,y,true);
-			$('#signal').attr('src','/images/red.gif');
-			$('#coolDown').text('Cooling Down...');
-			stop.play();
-			setTimeout(function(){
-				oppStage.listening(true);
-				$('#coolDown').text('Attack Now!');
-				$('#signal').attr('src','/images/green.gif');
-				go.play();
-			},2000);
-			setTimeout(function(){
-				$('#signal').attr('src','/images/yellow.gif');
-				stop.play();
-			},1000);
+			
 		});
+		
+		setInterval(function(){
+			if(countTime){
+				timeLeft -= 1;
+				$('#coolDown').text('Attack Now(' + timeLeft + ' sec left)!');
+				if(timeLeft <= 0){
+					countTime = false;
+					oppStage.listening(false);
+					$('#signal').attr('src','/images/red.gif');
+					$('#coolDown').text('Cooling Down...');
+					stop.play();
+					setTimeout(function(){
+						countTime = true;
+						timeLeft = 3;
+						oppStage.listening(true);
+						$('#coolDown').text('Attack Now(3 sec left)!');
+						$('#signal').attr('src','/images/green.gif');
+						go.play();
+					},2000);
+					setTimeout(function(){
+						$('#signal').attr('src','/images/yellow.gif');
+						stop.play();
+					},1000);
+				}
+			}
+		},1000);
 		
 		//var ptrImg = new Image();
 		//ptrImg.onload = function(){
